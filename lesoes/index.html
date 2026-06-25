@@ -3,6 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Google Analytics (GA4) — cole seu ID em GA_ID e nada carrega até lá -->
+<script>
+  var GA_ID = ""; // ex.: G-XXXXXXXXXX (me passe esse código)
+  if (GA_ID) {
+    var s=document.createElement('script'); s.async=true;
+    s.src='https://www.googletagmanager.com/gtag/js?id='+GA_ID;
+    document.head.appendChild(s);
+    window.dataLayer=window.dataLayer||[]; function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date()); gtag('config', GA_ID);
+  }
+</script>
+
 <title>A Psicologia nas Lesões · Ciclo de encontros ao vivo com Pamella Braz</title>
 <meta name="description" content="Ciclo de 4 encontros ao vivo sobre a recuperação psicológica da lesão no esporte. Com a psicóloga clínica e do esporte Pamella Braz, CRP 18/02439.">
 <meta property="og:title" content="A Psicologia nas Lesões">
