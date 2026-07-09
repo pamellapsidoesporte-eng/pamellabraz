@@ -83,6 +83,11 @@ input.code:focus { border-color: var(--areia); }
 .sessioninfo .lnk { font-size: 12px; color: rgba(235,230,220,.6); word-break: break-all; }
 .statusdot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: #b0693f; margin-right: 6px; }
 .statusdot.on { background: #7da77d; }
+.plists details.pd { background: rgba(235,230,220,.05); border: 1px solid rgba(216,201,163,.25); border-radius: 12px; margin: 8px 0; }
+.plists summary { padding: 12px 16px; cursor: pointer; color: var(--areia); font-weight: 600; font-size: 14px; letter-spacing: 1px; list-style: none; }
+.plists details[open] summary { border-bottom: 1px solid rgba(216,201,163,.15); }
+.plists .pin { padding: 10px 18px 14px 18px; font-size: 14px; line-height: 1.75; color: rgba(235,230,220,.85); }
+.plists .pin strong { color: var(--areia); font-weight: 600; }
 footer { text-align: center; font-size: 10.5px; color: rgba(235,230,220,.35); padding: 22px; letter-spacing: 1px; }
 </style>
 </head>
@@ -126,6 +131,7 @@ footer { text-align: center; font-size: 10.5px; color: rgba(235,230,220,.35); pa
 
 <!-- ===== PACIENTE: SESSÃO ===== -->
 <div class="view" id="v-patient">
+  <span class="backlink" onclick="patientLeave()">&#8592; voltar</span>
   <p class="msg"><span class="statusdot" id="pDot"></span><span id="pStatus">Conectando…</span></p>
   <div id="stage">
     <div id="breath">
@@ -138,7 +144,32 @@ footer { text-align: center; font-size: 10.5px; color: rgba(235,230,220,.35); pa
     <div id="audioOverlay">🔈 Toque aqui uma vez para ativar o som da sessão</div>
     <button id="fsBtn">⛶ tela cheia</button>
   </div>
+
+  <div class="plists">
+    <p class="msg" style="margin-top:26px; letter-spacing:1px;">Listas de apoio &mdash; abra quando a sua psic&oacute;loga pedir</p>
+    <details class="pd"><summary>Pensamentos negativos (cogni&ccedil;&otilde;es)</summary><div class="pin">
+      <strong>Sobre mim:</strong> Eu n&atilde;o mere&ccedil;o o amor &middot; Sou uma m&aacute; pessoa &middot; Sou terr&iacute;vel &middot; Sou in&uacute;til (inadequado(a)) &middot; Sou vergonhoso(a) &middot; N&atilde;o sou capaz de ser amado(a) &middot; N&atilde;o sou bom (boa) o suficiente &middot; Mere&ccedil;o apenas coisas ruins &middot; Sou constantemente prejudicado(a) &middot; Sou feio(a) &middot; Sou burro(a) &middot; Sou insignificante &middot; Sou uma decep&ccedil;&atilde;o &middot; Eu mere&ccedil;o morrer &middot; Eu mere&ccedil;o ser miser&aacute;vel &middot; Eu sou diferente (n&atilde;o me encaixo)<br><br>
+      <strong>Sobre o que fiz:</strong> Eu deveria ter feito algo &middot; Eu fiz algo errado &middot; Eu deveria ter percebido<br><br>
+      <strong>Seguran&ccedil;a:</strong> N&atilde;o consigo confiar em ningu&eacute;m &middot; N&atilde;o sou capaz de me proteger &middot; Estou em perigo &middot; N&atilde;o estou seguro(a) &middot; N&atilde;o &eacute; seguro sentir as minhas emo&ccedil;&otilde;es<br><br>
+      <strong>Controle:</strong> N&atilde;o estou no controle &middot; Sou impotente &middot; Sou fraco(a) &middot; N&atilde;o consigo obter o que desejo &middot; N&atilde;o consigo me defender &middot; N&atilde;o consigo desabafar &middot; N&atilde;o sou digno(a) de confian&ccedil;a &middot; N&atilde;o consigo confiar em mim mesmo(a) &middot; Sou um fracasso &middot; N&atilde;o consigo ter sucesso &middot; Preciso ser perfeito(a) &middot; N&atilde;o consigo suportar &middot; Sou inadequado(a)
+    </div></details>
+    <details class="pd"><summary>Pensamentos positivos (cogni&ccedil;&otilde;es)</summary><div class="pin">
+      <strong>Sobre mim:</strong> Eu mere&ccedil;o o amor; sou digno(a) de ser amado(a) &middot; Sou uma pessoa boa &middot; Estou bem assim &middot; Eu tenho m&eacute;rito &middot; Eu posso ser amado(a) &middot; Eu mere&ccedil;o coisas boas &middot; Eu sou (posso ser) saud&aacute;vel &middot; Tenho boa apar&ecirc;ncia &middot; Sou inteligente &middot; Sou significante (tenho import&acirc;ncia) &middot; Sinto-me bem do jeito que sou &middot; Eu mere&ccedil;o viver &middot; Eu mere&ccedil;o ser feliz<br><br>
+      <strong>Sobre o que fiz:</strong> Eu fiz o melhor que pude &middot; Eu aprendi (posso aprender) com isso<br><br>
+      <strong>Seguran&ccedil;a:</strong> Posso escolher em quem confiar &middot; Posso (aprender a) cuidar de mim &middot; Acabou; estou seguro(a) agora &middot; Posso sentir as minhas emo&ccedil;&otilde;es com seguran&ccedil;a<br><br>
+      <strong>Controle:</strong> Consigo controlar o que est&aacute; ao meu alcance &middot; Agora possuo escolhas &middot; Sou forte &middot; Consigo obter o que desejo &middot; Consigo expor as minhas necessidades &middot; Sou confi&aacute;vel &middot; Posso confiar em mim &middot; Posso confiar no meu bom-senso &middot; Consigo ter sucesso &middot; Posso ser eu mesmo(a) &middot; Consigo dar conta &middot; Sou adequado(a)
+    </div></details>
+    <details class="pd"><summary>Emo&ccedil;&otilde;es</summary><div class="pin">
+      <strong>Desagrad&aacute;veis:</strong> Tristeza &middot; Pavor &middot; Culpa &middot; Vergonha &middot; Inveja &middot; Desprezo &middot; Nostalgia &middot; Medo &middot; Humilha&ccedil;&atilde;o &middot; Pesar &middot; Raiva &middot; Apatia &middot; Melancolia &middot; Covardia &middot; Ansiedade &middot; Desespero &middot; Remorso &middot; Nojo &middot; Depress&atilde;o &middot; Ofensa &middot; Ang&uacute;stia &middot; P&acirc;nico &middot; Solid&atilde;o &middot; Temor &middot; Dor &middot; T&eacute;dio<br><br>
+      <strong>Agrad&aacute;veis:</strong> Alegria &middot; Prazer &middot; Paz &middot; Entusiasmo &middot; Paix&atilde;o &middot; Motiva&ccedil;&atilde;o &middot; Gratid&atilde;o &middot; Al&iacute;vio &middot; Esperan&ccedil;a &middot; Satisfa&ccedil;&atilde;o &middot; Euforia &middot; Desabafo &middot; Orgulho &middot; Felicidade &middot; Tranquilidade &middot; Consolo &middot; Anima&ccedil;&atilde;o &middot; Enfrentamento &middot; Bondade &middot; Calma &middot; Serenidade &middot; Harmonia &middot; Sossego &middot; Sensibilidade &middot; Generosidade
+    </div></details>
+    <details class="pd"><summary>Sensa&ccedil;&otilde;es no corpo</summary><div class="pin">
+      Aperto no peito &middot; Borboleta na barriga &middot; Cabe&ccedil;a rodando &middot; Dor na barriga &middot; Meu corpo n&atilde;o para &middot; Cabe&ccedil;a bagun&ccedil;ada &middot; Ouvido tampado &middot; Pesco&ccedil;o doendo &middot; Press&atilde;o no pesco&ccedil;o &middot; Aperto no est&ocirc;mago &middot; N&oacute; na garganta &middot; Cabe&ccedil;a atrapalhada &middot; Cora&ccedil;&atilde;o acelerado &middot; Dor de barriga &middot; Press&atilde;o na cabe&ccedil;a &middot; Falta de ar &middot; &Acirc;nsia de v&ocirc;mito &middot; Cora&ccedil;&atilde;o saindo pela boca &middot; Vontade de vomitar &middot; Mexido(a) por dentro &middot; N&atilde;o consigo respirar &middot; N&oacute; no est&ocirc;mago &middot; Sensa&ccedil;&atilde;o ruim no peito &middot; Press&atilde;o no peito &middot; Zumbido na cabe&ccedil;a &middot; Bra&ccedil;o dormente
+    </div></details>
+  </div>
 </div>
+
+
 
 <!-- ===== SOLO ===== -->
 <div class="view" id="v-solo">
@@ -241,6 +272,7 @@ footer { text-align: center; font-size: 10.5px; color: rgba(235,230,220,.35); pa
 
 <script>
 /* ================= views ================= */
+function patientLeave(){ try{ if(conn&&conn.open) conn.close(); }catch(e){} try{ engineStop(); }catch(e){} show('v-home'); }
 function goHome(){ try{ engineStop(); }catch(e){} show('v-home'); }
 function show(id){ document.querySelectorAll('.view').forEach(v=>v.classList.remove('active')); document.getElementById(id).classList.add('active'); }
 
@@ -386,7 +418,7 @@ function theraSetup(){
   const code=makeCode();
   document.getElementById('tCode').textContent=code.split('').join(' ');
   const isWeb=location.protocol.startsWith('http');
-  const link=isWeb?(location.origin+location.pathname+'#'+code):null;
+  const link=isWeb?(location.origin+'/paciente/#'+code):null;
   document.getElementById('tLink').textContent=link?link:'Envie o arquivo deste site ao paciente junto com o código acima.';
   window._tCode=code; window._tLink=link;
   if(typeof Peer==='undefined'){ document.getElementById('tStatus').textContent='sem internet — modo local apenas'; return; }
