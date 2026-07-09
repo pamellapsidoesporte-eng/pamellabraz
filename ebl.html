@@ -108,7 +108,7 @@ footer { text-align: center; font-size: 10.5px; color: rgba(235,230,220,.35); pa
       <p>Exercícios de regulação combinados em sessão — lugar calmo, abraço da borboleta.</p>
     </div>
   </div>
-  <div class="tlink" onclick="show('v-thera'); theraSetup();">área da terapeuta</div>
+  <div class="tlink" onclick="requestThera()">área da terapeuta</div>
 </div>
 
 <!-- ===== PACIENTE: CÓDIGO ===== -->
@@ -153,6 +153,19 @@ footer { text-align: center; font-size: 10.5px; color: rgba(235,230,220,.35); pa
   <div class="center" style="margin-top:16px;">
     <button class="btn" id="soloStart" onclick="soloToggle()">▶ Iniciar</button>
     <button class="btn ghost" onclick="engineStop(); soloBtnReset();" style="margin-left:8px;">■ Parar</button>
+  </div>
+</div>
+
+<!-- ===== SENHA ===== -->
+<div class="view" id="v-senha">
+  <span class="backlink" onclick="goHome()">&#8592; voltar</span>
+  <p class="msg" style="margin-top:20px;">&Aacute;rea restrita &mdash; digite a senha:</p>
+  <div class="codebox">
+    <input class="code" type="password" id="senhaInput" style="letter-spacing:6px; font-size:22px;" autocomplete="off">
+  </div>
+  <div class="center">
+    <button class="btn" onclick="checkSenha()">Entrar</button>
+    <p class="msg" id="senhaMsg" style="margin-top:12px;"></p>
   </div>
 </div>
 
@@ -315,7 +328,7 @@ function moveStageTo(holderId){ document.getElementById(holderId).appendChild(st
 let peer=null, conn=null;
 function handleHash(){
   const hashRaw=(location.hash||'').replace('#','').trim();
-  if(hashRaw.toLowerCase()==='terapeuta'){ show('v-thera'); theraSetup(); }
+  if(hashRaw.toLowerCase()==='terapeuta'){ requestThera(); }
   else { const codeFromHash=hashRaw.toUpperCase();
     if(codeFromHash.length===4){ show('v-code'); document.getElementById('codeInput').value=codeFromHash; } }
 }
@@ -355,6 +368,18 @@ function patientConnect(){
 /* ================= TERAPEUTA ================= */
 let tConn=null, tPeer=null, tRunning=false;
 function makeCode(){ const s='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let c=''; for(let i=0;i<4;i++) c+=s[Math.floor(Math.random()*s.length)]; return c; }
+function requestThera(){
+  if(sessionStorage.getItem('pb_auth')==='1'){ show('v-thera'); theraSetup(); return; }
+  show('v-senha');
+  setTimeout(()=>{ const i=document.getElementById('senhaInput'); if(i) i.focus(); },200);
+}
+function checkSenha(){
+  const v=document.getElementById('senhaInput').value.trim();
+  if(v==='emdr1'){ sessionStorage.setItem('pb_auth','1'); document.getElementById('senhaInput').value='';
+    document.getElementById('senhaMsg').textContent=''; show('v-thera'); theraSetup(); }
+  else { document.getElementById('senhaMsg').textContent='Senha incorreta.'; }
+}
+document.addEventListener('keydown',e=>{ if(e.key==='Enter'&&document.getElementById('v-senha').classList.contains('active')) checkSenha(); });
 function theraSetup(){
   moveStageTo('theraStageHolder');
   if(tPeer) return;
