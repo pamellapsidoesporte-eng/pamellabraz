@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema EMDR · Pamella Braz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bruma: #ebe6dc; --pedra-escura: #1f2820; --verde-pedra: #3a4a3d;
+  --salvia: #6a7d6d; --areia: #d8c9a3; --branco: #ffffff;
+  --texto: #3a3a3a; --texto-2: #4a4a4a;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', sans-serif; background: var(--bruma); color: var(--texto); font-size: 15px; line-height: 1.55; }
+header { background: var(--pedra-escura); color: var(--bruma); padding: 14px 28px; display: flex; align-items: center; gap: 24px; flex-wrap: wrap; position: sticky; top: 0; z-index: 50; }
+header .brand { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 600; letter-spacing: .5px; }
+header .brand small { display: block; font-family: 'Inter', sans-serif; font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--areia); font-weight: 600; }
+nav { display: flex; gap: 6px; flex-wrap: wrap; }
+nav button { background: transparent; border: 1px solid rgba(216,201,163,.4); color: var(--bruma); font-family: 'Inter', sans-serif; font-size: 12.5px; font-weight: 600; letter-spacing: .8px; padding: 7px 14px; border-radius: 20px; cursor: pointer; }
+nav button:hover { border-color: var(--areia); }
+nav button.active { background: var(--areia); color: var(--pedra-escura); border-color: var(--areia); }
+main { max-width: 1100px; margin: 0 auto; padding: 28px 24px 60px 24px; }
+section.tab { display: none; }
+section.tab.active { display: block; }
+h1 { font-family: 'Cormorant Garamond', serif; font-weight: 600; font-size: 30px; color: var(--pedra-escura); margin-bottom: 4px; }
+h2 { font-family: 'Cormorant Garamond', serif; font-weight: 600; font-size: 22px; color: var(--pedra-escura); margin: 26px 0 8px 0; }
+.eyebrow { font-size: 11px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--salvia); font-weight: 600; }
+.rule { width: 56px; height: 2px; background: var(--areia); margin: 10px 0 18px 0; }
+.card { background: var(--branco); border: 1px solid var(--areia); border-left: 5px solid var(--verde-pedra); border-radius: 10px; padding: 16px 20px; margin: 10px 0 16px 0; }
+.card.soft { border-left-color: var(--areia); }
+.note { font-size: 12.5px; color: var(--texto-2); font-style: italic; }
+.fala { background: #f6f3ec; border-left: 4px solid var(--salvia); border-radius: 0 8px 8px 0; padding: 10px 14px; color: var(--texto-2); margin: 8px 0; font-size: 14px; }
+.fala::before { content: "FALA"; display: block; font-size: 9px; font-weight: 700; letter-spacing: 2px; color: var(--salvia); margin-bottom: 3px; font-style: normal; }
+.fala .var { color: var(--verde-pedra); font-weight: 700; }
+button.btn { background: var(--verde-pedra); color: var(--bruma); border: none; border-radius: 8px; padding: 10px 20px; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; }
+button.btn:hover { background: #2d3a30; }
+button.btn.ghost { background: transparent; color: var(--verde-pedra); border: 1.5px solid var(--verde-pedra); }
+button.btn.small { padding: 6px 12px; font-size: 12.5px; }
+
+/* ===== EBL ===== */
+#stage { position: relative; background: var(--pedra-escura); border-radius: 14px; height: 62vh; min-height: 380px; overflow: hidden; cursor: none; }
+#stage.fullscreen { cursor: none; }
+#dot { position: absolute; top: 50%; left: 50%; width: 64px; height: 64px; border-radius: 50%; background: var(--areia); transform: translate(-50%, -50%); box-shadow: 0 0 40px rgba(216,201,163,.45); }
+#tapzone { position: absolute; inset: 0; display: none; align-items: center; justify-content: space-between; padding: 0 12%; }
+.tapcircle { width: 130px; height: 130px; border-radius: 50%; border: 3px solid rgba(216,201,163,.4); display: flex; align-items: center; justify-content: center; font-size: 15px; letter-spacing: 2px; color: rgba(235,230,220,.65); transition: background .08s, box-shadow .08s; }
+.tapcircle.on { background: var(--areia); color: var(--pedra-escura); box-shadow: 0 0 50px rgba(216,201,163,.6); }
+#counter { position: absolute; top: 14px; right: 18px; font-size: 13px; color: rgba(235,230,220,.55); letter-spacing: 1px; font-variant-numeric: tabular-nums; }
+#stagemsg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: rgba(235,230,220,.5); font-size: 15px; letter-spacing: 1px; text-align: center; padding: 20px; }
+#fsbtn { position: absolute; bottom: 12px; right: 14px; background: rgba(235,230,220,.12); color: rgba(235,230,220,.75); border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; cursor: pointer; }
+.controls { background: var(--branco); border: 1px solid var(--areia); border-radius: 12px; padding: 16px 20px; margin-top: 14px; display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px 22px; align-items: end; }
+.ctl label { display: block; font-size: 10.5px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--salvia); margin-bottom: 5px; }
+.ctl input[type=range] { width: 100%; accent-color: var(--verde-pedra); }
+.ctl select, .ctl input[type=number] { width: 100%; padding: 7px 9px; border: 1px solid var(--areia); border-radius: 7px; font-family: 'Inter', sans-serif; font-size: 14px; background: var(--bruma); color: var(--texto); }
+.ctl .val { font-size: 12px; color: var(--texto-2); }
+.chks { display: flex; gap: 14px; flex-wrap: wrap; }
+.chks label { display: flex; align-items: center; gap: 6px; font-size: 13.5px; font-weight: 600; color: var(--texto); text-transform: none; letter-spacing: 0; cursor: pointer; }
+.chks input { accent-color: var(--verde-pedra); width: 16px; height: 16px; }
+.swatches { display: flex; gap: 8px; }
+.sw { width: 26px; height: 26px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
+.sw.sel { border-color: var(--pedra-escura); }
+.mainbtns { display: flex; gap: 10px; align-items: center; }
+
+/* ===== escalas ===== */
+.scale { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0 6px 0; }
+.scale button { flex: 1; min-width: 52px; padding: 10px 0; font-size: 22px; font-weight: 700; font-family: 'Inter', sans-serif; border: 2px solid var(--areia); background: var(--branco); border-radius: 10px; cursor: pointer; color: var(--texto); }
+.scale button.sel { background: var(--verde-pedra); color: var(--bruma); border-color: var(--verde-pedra); }
+.scale-ends { display: flex; justify-content: space-between; font-size: 12px; color: var(--texto-2); margin-bottom: 14px; }
+
+/* ===== protocolo / fases ===== */
+.steps { display: flex; gap: 6px; flex-wrap: wrap; margin: 14px 0; }
+.steps button { border: 1.5px solid var(--areia); background: var(--branco); border-radius: 8px; padding: 8px 13px; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--texto-2); font-family: 'Inter', sans-serif; }
+.steps button.active { background: var(--verde-pedra); border-color: var(--verde-pedra); color: var(--bruma); }
+.fase { display: none; }
+.fase.active { display: block; }
+.field { margin-bottom: 12px; }
+.field label { display: block; font-size: 10.5px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--salvia); margin-bottom: 4px; }
+.field input[type=text], .field textarea { width: 100%; padding: 9px 11px; border: 1px solid var(--areia); border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 14.5px; background: var(--branco); color: var(--texto); }
+.field textarea { min-height: 64px; resize: vertical; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.chip { border: 1px solid var(--areia); background: var(--branco); border-radius: 16px; padding: 4px 12px; font-size: 12.5px; cursor: pointer; color: var(--texto-2); }
+.chip.sel { background: var(--verde-pedra); color: var(--bruma); border-color: var(--verde-pedra); }
+details { background: var(--branco); border: 1px solid var(--areia); border-radius: 10px; margin: 8px 0; overflow: hidden; }
+summary { cursor: pointer; padding: 13px 18px; font-weight: 700; font-size: 14.5px; color: var(--verde-pedra); list-style: none; }
+summary::before { content: "+ "; color: var(--areia); font-weight: 700; }
+details[open] summary::before { content: "− "; }
+details .inner { padding: 2px 18px 14px 18px; border-top: 1px solid #eee6d4; }
+.tag { display: inline-block; background: var(--areia); color: var(--pedra-escura); font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; border-radius: 6px; padding: 2px 8px; margin-right: 6px; }
+
+/* ===== palhetas ===== */
+.pal-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 6px 24px; }
+.pal-grid div { padding: 3px 0; font-size: 15.5px; }
+.pal-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media (max-width: 760px) { .pal-cols { grid-template-columns: 1fr; } }
+.pal-cat { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--salvia); margin: 12px 0 4px 0; }
+
+/* ===== registro ===== */
+table.log { width: 100%; border-collapse: collapse; background: var(--branco); border: 1px solid var(--areia); border-radius: 10px; overflow: hidden; font-size: 13.5px; }
+table.log th { background: var(--verde-pedra); color: var(--bruma); text-align: left; padding: 8px 12px; font-size: 12px; letter-spacing: 1px; }
+table.log td { padding: 7px 12px; border-top: 1px solid #eee6d4; vertical-align: top; }
+footer { text-align: center; font-size: 11.5px; color: var(--salvia); padding: 24px; border-top: 1px solid var(--areia); }
+.bigsel { font-size: 26px; font-weight: 700; color: var(--verde-pedra); min-width: 40px; display: inline-block; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">Pamella Braz<small>Sistema EMDR · uso profissional</small></div>
+  <nav id="nav">
+    <button data-tab="protocolo" class="active">Protocolo padrão</button>
+    <button data-tab="escalas">Escalas</button>
+    <button data-tab="listas">Listas de apoio</button>
+    <button data-tab="outros">Outros protocolos</button>
+    <button data-tab="registro">Registro</button>
+    <button onclick="window.open('https://pamellabraz.com.br/ebl.html#terapeuta','_blank'); return false;" style="background:var(--areia); color:var(--pedra-escura); border-color:var(--areia); font-weight:700;">▶ EBL · site do paciente</button>
+  </nav>
+</header>
+
+<main>
+
+<!-- ================= PROTOCOLO ================= -->
+<section class="tab active" id="tab-protocolo">
+  <div class="eyebrow">Protocolo padrão · 8 fases</div>
+  <h1>Sessão guiada</h1>
+  <div class="rule"></div>
+
+  <div class="steps" id="faseSteps">
+    <button data-f="1" class="active">1 História</button>
+    <button data-f="2">2 Preparação</button>
+    <button data-f="3">3 Avaliação</button>
+    <button data-f="4">4 Dessensibilização</button>
+    <button data-f="5">5 Instalação</button>
+    <button data-f="6">6 Corpo</button>
+    <button data-f="7">7 Fechamento</button>
+    <button data-f="8">8 Reavaliação</button>
+  </div>
+
+  <div class="fase active" id="fase-1">
+    <div class="card">
+      <strong>Levantar alvos e plano de 3 tempos (passado · presente · futuro).</strong>
+      <div class="fala">"Quais são as piores lembranças da sua vida — as cenas que, quando voltam, ainda mexem com você? Me diga só um título para cada uma."</div>
+      <div class="fala">"E hoje, o que dispara isso? Em que situações do dia a dia (ou do treino, da competição) essa sensação aparece?"</div>
+      <div class="fala">"Se a gente fizer um bom trabalho, como você quer estar reagindo nessas situações daqui a alguns meses?"</div>
+      <div class="field"><label>Anotações da Fase 1 (alvos levantados)</label><textarea id="f1notas" placeholder="Alvos passados, gatilhos presentes, metas futuras…"></textarea></div>
+      <button class="btn small" onclick="logAdd('Fase 1', document.getElementById('f1notas').value)">Salvar no registro</button>
+    </div>
+  </div>
+
+  <div class="fase" id="fase-2">
+    <div class="card">
+      <strong>Psicoeducação + sinal de pare + teste de EBL + recurso.</strong>
+      <div class="fala">"Quando algo muito difícil acontece, às vezes o cérebro não consegue digerir aquela experiência, e ela fica guardada 'crua'. O EMDR ajuda o cérebro a retomar essa digestão. É como olhar a paisagem pela janela de um trem — deixe passar o que tiver que passar. Não tem jeito certo ou errado."</div>
+      <div class="fala">"Você está no controle o tempo todo. Se precisar parar, levante a mão assim. Eu paro imediatamente."</div>
+      <div class="fala">"Vamos testar o movimento: siga o ponto na tela só com os olhos… Essa velocidade está confortável?"</div>
+      <p class="note">Instalar Lugar Calmo / RDI antes de reprocessar (scripts na aba "Outros protocolos"). Combinar plano B para queda de conexão.</p>
+    </div>
+  </div>
+
+  <div class="fase" id="fase-3">
+    <div class="card">
+      <strong>Avaliação do alvo</strong> — preencha com o paciente (palhetas na aba própria, para compartilhar).
+      <div class="field"><label>Alvo / lembrança</label><input type="text" id="f3alvo" placeholder="Ex.: a final perdida, a lesão no joelho…"></div>
+      <div class="field"><label>Imagem (pior parte)</label>
+        <div class="fala">"Que imagem representa a pior parte dessa experiência?"</div>
+        <input type="text" id="f3img"></div>
+      <div class="field"><label>Cognição negativa</label>
+        <div class="fala">"Quais palavras combinam com essa imagem e expressam uma crença negativa sobre você agora?"</div>
+        <input type="text" id="f3cn" placeholder="Ex.: Sou um fracasso">
+        <div class="chips" id="cnChips"></div></div>
+      <div class="field"><label>Cognição positiva</label>
+        <div class="fala">"O que você preferiria acreditar sobre você agora?"</div>
+        <input type="text" id="f3cp" placeholder="Ex.: Consigo ter sucesso">
+        <div class="chips" id="cpChips"></div></div>
+      <div class="field"><label>VoC — <span class="bigsel" id="vocSel3">–</span> / 7</label>
+        <div class="fala">"De 1 (totalmente falso) a 7 (totalmente verdadeiro), quão verdadeiras essas palavras se sentem agora?"</div>
+        <div class="scale" data-scale="voc3"></div></div>
+      <div class="field"><label>Emoções</label>
+        <div class="fala">"Juntando a imagem e as palavras negativas, que emoções você sente agora?"</div>
+        <input type="text" id="f3emo">
+        <div class="chips" id="emoChips"></div></div>
+      <div class="field"><label>SUDS — <span class="bigsel" id="sudsSel3">–</span> / 10</label>
+        <div class="fala">"De 0 (neutro) a 10 (a pior possível), quanto isso perturba agora?"</div>
+        <div class="scale" data-scale="suds3"></div></div>
+      <div class="field"><label>Sensação corporal</label>
+        <div class="fala">"Onde você sente isso no seu corpo?"</div>
+        <input type="text" id="f3corpo" placeholder="Ex.: aperto no peito"></div>
+      <button class="btn" onclick="salvarFase3()">Salvar avaliação no registro</button>
+    </div>
+  </div>
+
+  <div class="fase" id="fase-4">
+    <div class="card">
+      <strong>Dessensibilização</strong> — séries rápidas de 24–30 (aba EBL).
+      <div class="fala">"Traga a imagem, as palavras <span class="var">[CN]</span> e note onde sente isso no corpo… e acompanhe."</div>
+      <div class="fala">Entre séries: "Respire fundo… solta. O que você percebe agora?" → "Vá com isso."</div>
+      <div class="fala">Fim de canal (2 séries neutras): "Quando você volta para a experiência original, o que percebe agora?"</div>
+      <div class="fala">Alvo neutro: "De 0 a 10, quanto perturba agora?"</div>
+      <div class="field"><label>SUDS na checagem — <span class="bigsel" id="sudsSel4">–</span> / 10</label>
+        <div class="scale" data-scale="suds4"></div>
+        <button class="btn small" onclick="logSuds4()">Registrar SUDS</button></div>
+      <details><summary>Se travar (looping): interweaves</summary><div class="inner">
+        <div class="fala"><em>Responsabilidade:</em> "De quem era a responsabilidade — de um adulto ou de uma criança de <span class="var">[idade]</span> anos?"</div>
+        <div class="fala"><em>Segurança:</em> "Aquilo acabou? Você está seguro(a) agora?"</div>
+        <div class="fala"><em>Escolha:</em> "E hoje, que escolhas você tem que não tinha naquela época?"</div>
+        <div class="fala"><em>Esporte:</em> "Um único lance define quem um atleta é? O que você diria a um colega de time que errou esse mesmo lance?"</div>
+        <p class="note">Antes do interweave: mudar velocidade/direção/modalidade da EBL, ou perguntar "o que é a pior parte disso agora?".</p>
+      </div></details>
+      <p class="note">Continuar até SUDS 0 (ou 1 ecológico). Só então ir para a Instalação.</p>
+    </div>
+  </div>
+
+  <div class="fase" id="fase-5">
+    <div class="card">
+      <strong>Instalação da cognição positiva</strong> — séries rápidas.
+      <div class="fala">"As palavras <span class="var">[CP]</span> ainda combinam, ou existe outra frase positiva que combine melhor agora?"</div>
+      <div class="fala">"Pense na experiência original e nas palavras <span class="var">[CP]</span>. De 1 a 7, quão verdadeiras se sentem agora?"</div>
+      <div class="fala">"Segure as duas juntas — a lembrança e as palavras — e acompanhe."</div>
+      <div class="field"><label>VoC — <span class="bigsel" id="vocSel5">–</span> / 7</label>
+        <div class="scale" data-scale="voc5"></div>
+        <button class="btn small" onclick="logVoc5()">Registrar VoC</button></div>
+      <div class="fala">Se não sobe: "O que impede de ser um 7?" <span class="note">(crença bloqueadora → novo alvo)</span></div>
+    </div>
+  </div>
+
+  <div class="fase" id="fase-6">
+    <div class="card">
+      <strong>Checagem corporal</strong>
+      <div class="fala">"Feche os olhos. Traga a experiência original e as palavras <span class="var">[CP]</span>… percorra mentalmente o corpo, da cabeça aos pés, e me diga onde encontrar qualquer sensação."</div>
+      <p class="note">Desconforto → séries rápidas até dissolver. Sensação boa → 1–2 séries para fortalecer.</p>
+    </div>
+  </div>
+
+  <div class="fase" id="fase-7">
+    <div class="card">
+      <strong>Fechamento</strong>
+      <div class="fala"><em>Completa:</em> "O trabalho de hoje pode continuar depois que a gente desligar. Se aparecerem lembranças, sonhos ou emoções novas, anote curto (o que veio, o que sentiu, quanto pesou de 0 a 10) e traga na próxima."</div>
+      <div class="fala"><em>Incompleta:</em> "Fizemos um trabalho importante e o tempo está acabando. Vamos guardar o que ficou para continuar na próxima." <span class="note">→ Container + Lugar Calmo. Sem instalação nem checagem corporal.</span></div>
+    </div>
+  </div>
+
+  <div class="fase" id="fase-8">
+    <div class="card">
+      <strong>Reavaliação (sessão seguinte)</strong>
+      <div class="fala">"Como foi a semana? O que você notou? … Volte àquela lembrança: o que aparece agora? De 0 a 10, quanto perturba? E as palavras <span class="var">[CP]</span>, de 1 a 7?"</div>
+      <p class="note">SUDS &gt; 0 → retomar Fase 4. Estável → próximo alvo do plano de 3 tempos ou Padrão de Futuro.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ESCALAS ================= -->
+<section class="tab" id="tab-escalas">
+  <div class="eyebrow">Para o paciente apontar na tela</div>
+  <h1>Escalas</h1>
+  <div class="rule"></div>
+  <h2>SUDS — Perturbação <span class="bigsel" id="sudsSelBig">–</span></h2>
+  <div class="scale" data-scale="sudsBig"></div>
+  <div class="scale-ends"><span>0 · nenhuma perturbação</span><span>10 · a pior possível</span></div>
+  <h2>VoC — Validade da crença positiva <span class="bigsel" id="vocSelBig">–</span></h2>
+  <div class="scale" data-scale="vocBig"></div>
+  <div class="scale-ends"><span>1 · totalmente falso</span><span>7 · totalmente verdadeiro</span></div>
+</section>
+
+<!-- ================= PALHETAS ================= -->
+<section class="tab" id="tab-listas">
+  <div class="eyebrow">Fase de avaliação · compartilhar com o paciente</div>
+  <h1>Listas de apoio</h1>
+  <div class="rule"></div>
+
+  <div class="card">
+    <strong>EBL online — link para o paciente:</strong>
+    <a href="https://pamellabraz.com.br/paciente" target="_blank" style="color:var(--verde-pedra); font-weight:600;">pamellabraz.com.br/paciente</a>
+    <button class="btn small" style="margin-left:10px;" onclick="copyEblLink()">⧉ Copiar link</button>
+    <p class="note" style="margin-top:6px;">Envie esse link ao paciente. A sua área de controle abre pelo botão "▶ EBL · site do paciente" no topo (já entra direto na área da terapeuta).</p>
+  </div>
+
+  <h2>Cognições negativas e positivas</h2>
+  <div class="pal-cols">
+    <div class="card soft">
+      <div class="pal-cat">Negativas · Responsabilidade: deficiência</div>
+      <div id="palCN1"></div>
+      <div class="pal-cat">Negativas · Responsabilidade: ação</div>
+      <div id="palCN2"></div>
+      <div class="pal-cat">Negativas · Segurança / Vulnerabilidade</div>
+      <div id="palCN3"></div>
+      <div class="pal-cat">Negativas · Controle / Escolhas</div>
+      <div id="palCN4"></div>
+    </div>
+    <div class="card">
+      <div class="pal-cat">Positivas · Responsabilidade: deficiência</div>
+      <div id="palCP1"></div>
+      <div class="pal-cat">Positivas · Responsabilidade: ação</div>
+      <div id="palCP2"></div>
+      <div class="pal-cat">Positivas · Segurança / Vulnerabilidade</div>
+      <div id="palCP3"></div>
+      <div class="pal-cat">Positivas · Controle / Escolhas</div>
+      <div id="palCP4"></div>
+    </div>
+  </div>
+
+  <h2>Inventário de emoções</h2>
+  <div class="card soft">
+    <div class="pal-cat">Desagradáveis</div>
+    <div class="pal-grid" id="palEmoNeg"></div>
+    <div class="pal-cat">Agradáveis</div>
+    <div class="pal-grid" id="palEmoPos"></div>
+  </div>
+
+  <h2>Sensações corporais</h2>
+  <div class="card soft"><div class="pal-grid" id="palSens"></div></div>
+  <p class="note">Adaptado de Robbie Adler-Tapia, PhD · uso clínico.</p>
+</section>
+
+<!-- ================= OUTROS PROTOCOLOS ================= -->
+<section class="tab" id="tab-outros">
+  <div class="eyebrow">Consultar em sessão · com explicações passo a passo</div>
+  <h1>Outros protocolos</h1>
+  <div class="rule"></div>
+
+  <div class="card soft">
+    <p><strong>Como usar esta aba:</strong> cada protocolo abre com <em>para que serve</em>, <em>quando usar</em>, o <em>passo a passo com as falas prontas</em> e <em>dicas de quem está começando</em>. As falas estão nos blocos verdes — pode ler quase literalmente, adaptando ao vocabulário do paciente. Lembrete de EBL: <strong>lenta e curta (4–8 movimentos) para instalar recursos</strong> (coisas boas), <strong>rápida e longa (24–30) para reprocessar</strong> (coisas difíceis). Essa distinção é a regra mais importante desta aba: recurso não se reprocessa, se "rega".</p>
+  </div>
+
+  <h2>Recursos (Fase 2)</h2>
+
+  <details><summary>Lugar Calmo / Seguro <span class="tag">todo paciente, antes de reprocessar</span></summary><div class="inner">
+    <p><strong>Para que serve:</strong> criar um "botão de calma" interno que o paciente consegue acionar sozinho. É o recurso mais básico do EMDR — serve para fechar sessões, regular entre séries e dar segurança antes de tocar em material difícil.</p>
+    <p><strong>Quando usar:</strong> com todos os pacientes, na Fase 2, antes de qualquer reprocessamento. Também ao final de sessões incompletas e como tarefa de casa.</p>
+    <ol>
+      <li><strong>Evocar o lugar:</strong>
+        <div class="fala">"Pense num lugar, real ou imaginado, onde você se sente calmo(a) e seguro(a). Pode ser uma praia, um quarto, um campo… Quando encontrar, me avise."</div>
+        <p class="note">Se o paciente não achar um lugar "seguro" (comum em trauma complexo), troque a palavra: "um lugar tranquilo" ou "um lugar em que você fica em paz".</p></li>
+      <li><strong>Deixar o lugar vivo nos 5 sentidos:</strong>
+        <div class="fala">"O que você vê aí? O que escuta? Sente algum cheiro, alguma temperatura? E no corpo, o que percebe quando está nesse lugar?"</div>
+        <p class="note">Quanto mais sensorial, mais forte o recurso. Não tenha pressa nesta parte.</p></li>
+      <li><strong>Instalar com EBL lenta</strong> (4–8 movimentos, 1 série de cada vez):
+        <div class="fala">"Fique com essa imagem e com essa sensação boa no corpo… e acompanhe."</div>
+        <div class="fala">"Como está agora?" <span class="note">(se fortaleceu ou continuou bom → mais 1–2 séries; se veio algo ruim → pare, veja o passo "se contaminar")</span></div></li>
+      <li><strong>Palavra-chave:</strong>
+        <div class="fala">"Que palavra combina com esse lugar? … Agora pense em <span class="var">[palavra]</span> e note a sensação. Acompanhe de novo." <span class="note">(+1 série lenta)</span></div></li>
+      <li><strong>Testar com incômodo pequeno:</strong>
+        <div class="fala">"Agora traga uma chateação pequena da semana… notou o incômodo? Então pense em <span class="var">[palavra]</span> e volte para o seu lugar… O que acontece no corpo?"</div>
+        <p class="note">Esse teste mostra ao paciente que ele consegue mudar de estado sozinho — é isso que você quer que ele aprenda.</p></li>
+      <li><strong>Tarefa de casa:</strong> praticar 1–2x por dia, sempre FORA de crise ("treinar o músculo antes de precisar dele").</li>
+    </ol>
+    <p class="note"><strong>Se contaminar</strong> (vier conteúdo negativo junto): não insista, não tente "consertar" o lugar. Diga "sem problema — vamos escolher outro lugar" e recomece. Contaminação é informação clínica (anota!), não fracasso. <strong>Com atletas:</strong> "o lugar do melhor jogo da sua vida" costuma funcionar muito bem.</p>
+  </div></details>
+
+  <details><summary>RDI — Desenvolvimento e Instalação de Recursos <span class="tag">preparar para desafio ou fortalecer ego</span></summary><div class="inner">
+    <p><strong>Para que serve:</strong> "plantar" no paciente uma qualidade que ele vai precisar (coragem, calma, confiança), usando as próprias memórias dele como matéria-prima. É a base dos 4 scripts da Adler-Tapia logo abaixo.</p>
+    <p><strong>Quando usar:</strong> antes de reprocessar com pacientes frágeis (aumenta a tolerância), antes de competições/provas, e sempre que o paciente "não se lembra" de já ter sido forte — o RDI prova o contrário para ele.</p>
+    <p><strong>Quando NÃO usar como substituto:</strong> RDI não resolve trauma; ele prepara. Se o alvo é uma memória perturbadora, ela vai precisar de reprocessamento em algum momento.</p>
+    <ol>
+      <li><strong>Identificar a situação e a qualidade:</strong>
+        <div class="fala">"Pense na situação que vem pela frente <span class="var">[a final, a prova, o retorno]</span>. Do que você mais precisaria ali: calma, coragem, confiança, foco…?"</div>
+        <p class="note">Deixe o paciente nomear. A palavra dele vale mais que a sua.</p></li>
+      <li><strong>Buscar memória de domínio</strong> (quando ele JÁ teve essa qualidade):
+        <div class="fala">"Lembra de uma vez em que você teve exatamente essa <span class="var">[qualidade]</span>? Pode ser no esporte ou fora dele. Que cena é essa? O que você vê, ouve e sente no corpo quando está nela?"</div></li>
+      <li><strong>Se faltar memória própria, usar modelos e símbolos:</strong>
+        <div class="fala">"Quem é alguém — real ou não — que tem essa qualidade de sobra? Imagine essa pessoa agindo na situação… E existe uma imagem ou objeto que representa essa força para você?"</div></li>
+      <li><strong>Instalar</strong> (EBL LENTA, 4–8 movimentos, 1–3 séries por recurso):
+        <div class="fala">"Fique com essa cena e com a sensação no corpo… acompanhe. … O que percebe agora?"</div>
+        <p class="note">Se fortaleceu → repete. Se contaminou → troca de recurso (não insista no mesmo).</p></li>
+      <li><strong>Palavra-âncora:</strong>
+        <div class="fala">"Que palavra ou gesto vai te lembrar desse recurso? … Pense em <span class="var">[âncora]</span>, sinta o recurso e acompanhe mais uma vez."</div></li>
+      <li><strong>Ensaio futuro:</strong>
+        <div class="fala">"Agora se veja na <span class="var">[situação]</span>, já com essa qualidade presente, agindo do jeito que você quer… acompanhe."</div></li>
+    </ol>
+    <p class="note"><strong>Erro comum de iniciante:</strong> usar EBL rápida e longa no recurso — isso pode abrir material traumático sem querer. No RDI, menos é mais: séries curtas, lentas, e checando sempre.</p>
+  </div></details>
+
+  <details><summary>Container <span class="tag">fechar sessão incompleta</span></summary><div class="inner">
+    <p><strong>Para que serve:</strong> "guardar" com dignidade o material que ficou aberto, para o paciente não sair da sessão carregando tudo. Não apaga nada — organiza.</p>
+    <p><strong>Quando usar:</strong> todo fechamento de sessão incompleta (SUDS ainda alto), e como ferramenta de casa quando lembranças invadem em momento inoportuno ("guarde no container e traga na sessão").</p>
+    <ol>
+      <li><div class="fala">"Imagine um recipiente forte o suficiente para guardar tudo o que ficou incômodo hoje — um cofre, um baú, um contêiner de navio. Como ele é? Do que é feito?"</div>
+        <p class="note">Deixe o paciente construir os detalhes: material, tamanho, tranca. Quanto mais dele, melhor.</p></li>
+      <li><div class="fala">"Agora coloque dentro dele tudo o que a gente não terminou hoje, feche bem e me diga como fica trancado."</div></li>
+      <li><div class="fala">"Onde ele fica guardado até a nossa próxima sessão?"</div></li>
+      <li><strong>Sempre explique o sentido:</strong>
+        <div class="fala">"Guardar não é jogar fora — é esperar a hora certa de trabalhar."</div></li>
+    </ol>
+    <p class="note"><strong>Dica:</strong> se o material "não cabe" ou "escapa" do container, aumente o container (blindado, com cadeado, no fundo do mar) em vez de desistir. E finalize sempre com Lugar Calmo depois do container.</p>
+  </div></details>
+
+  <details><summary>Abraço da Borboleta <span class="tag">EBL autoadministrada · ótimo no online</span></summary><div class="inner">
+    <p><strong>Para que serve:</strong> EBL que o próprio paciente aplica em si (criada por Lucina Artigas). No online é sua melhor amiga: funciona para instalar recursos, para regular em casa e como alternativa quando o olho cansa.</p>
+    <ol>
+      <li><div class="fala">"Cruze os braços sobre o peito, com as mãos nos ombros ou nos braços."</div></li>
+      <li><div class="fala">"Agora dê toques alternados, um lado, depois o outro, num ritmo lento, como um tambor bem calmo. Vamos fazer juntos por um minuto."</div></li>
+    </ol>
+    <p class="note"><strong>Regra de bolso:</strong> ritmo LENTO para acalmar e instalar recursos; ritmo mais rápido somente quando você estiver usando como EBL de reprocessamento (aí quem dita o ritmo é você). Use o guia de tapping do site de EBL para marcar o ritmo na tela. Ensine na Fase 2 e prescreva como recurso de casa (junto com o Lugar Calmo, nunca para "se tratar sozinho").</p>
+  </div></details>
+
+  <h2>Desenvolvimento de recursos — scripts (Adler-Tapia)</h2>
+  <div class="card soft"><p>Os quatro scripts abaixo são variações estruturadas de RDI. A lógica é sempre a mesma, em 4 tempos: <strong>evocar o recurso → ativar (imagem + crença + emoção + corpo) → instalar com EBL lenta → ancorar numa palavra</strong>. A diferença é só a fonte do recurso. Escolha pela idade e pelo perfil do paciente.</p></div>
+
+  <details><summary>Nº 4 · Pessoa Importante <span class="tag">EBL lenta 4–6</span></summary><div class="inner">
+    <p><strong>Para que serve:</strong> transformar uma figura de apoio (real, imaginária, ou até alguém que já morreu) em recurso interno acessível. Muito útil para pacientes com boas figuras de vínculo na história — e emocionante quando é um avô ou avó querido.</p>
+    <ol>
+      <li><div class="fala">"Conte-me sobre alguém que lhe ajuda a se sentir melhor — alguém que possa ser um bom recurso para você. Pode ser real ou imaginária, até alguém importante que não está mais na sua vida."</div></li>
+      <li><div class="fala">"Quando você pensa nessa pessoa, qual imagem vem à sua cabeça?"</div></li>
+      <li><div class="fala">"Qual é o melhor pensamento que você poderia ter de você mesmo(a) nesse momento?"</div>
+        <p class="note">Repare: a crença positiva é sobre o PACIENTE, não sobre a pessoa. É "eu sou amado", não "ela é boa".</p></li>
+      <li><div class="fala">"Que sentimentos você sente? Onde você nota esse sentimento no seu corpo?"</div></li>
+      <li><strong>Ativar tudo junto e instalar:</strong>
+        <div class="fala">"Agora pense nessa pessoa, na <span class="var">[crença positiva]</span>, no sentimento de <span class="var">[emoção]</span> e no lugar do corpo onde sente…" <span class="note">(série curta e lenta, até 4–6; repetir algumas vezes apenas verificando: "o que você observa agora?")</span></div></li>
+      <li><strong>Ancorar:</strong>
+        <div class="fala">"Caso queira se lembrar dessa pessoa no futuro, qual nome, palavra ou frase devo utilizar? … Agora diga essa palavra e observe o que acontece." <span class="note">(+1 série)</span></div></li>
+    </ol>
+    <p class="note"><strong>Cuidado:</strong> se a pessoa escolhida tiver história ambivalente (ajudou mas também machucou), troque — o recurso precisa ser "limpo".</p>
+  </div></details>
+
+  <details><summary>Nº 5 · Experiência de Domínio <span class="tag">EBL lenta 4–6 · favorito com atletas</span></summary><div class="inner">
+    <p><strong>Para que serve:</strong> instalar como recurso um momento em que o paciente se orgulhou de si. Com atletas é ouro: a "melhor partida", o "dia em que superei". Também é uma ótima abertura de sessão recorrente ("algo bom desde a última sessão?") que treina o cérebro do paciente a registrar o positivo.</p>
+    <ol>
+      <li><div class="fala">"Conte-me sobre algo bom que aconteceu desde a nossa última sessão e/ou algo que fez você se sentir realmente orgulhoso(a) de você mesmo(a)."</div></li>
+      <li><div class="fala">"Qual imagem representa a melhor parte desse evento?"</div></li>
+      <li><div class="fala">"Qual seria o melhor pensamento que você poderia ter de você mesmo(a) nesse momento?"</div></li>
+      <li><div class="fala">"Que sentimentos você sente? Onde você nota esse sentimento no seu corpo?"</div></li>
+      <li><strong>Instalar:</strong>
+        <div class="fala">"Agora pense no que aconteceu, na <span class="var">[crença positiva]</span>, no sentimento de <span class="var">[emoção]</span> que observa em <span class="var">[sensação corporal]</span>…" <span class="note">(EBL até 4–6; repetir séries curtas e lentas verificando o recurso)</span></div></li>
+      <li><strong>Ancorar e projetar:</strong>
+        <div class="fala">"Qual palavra ou frase devo utilizar para fazê-lo(a) se lembrar dessa experiência? … Diga essa palavra e observe." <span class="note">(+1 série)</span></div>
+        <div class="fala">"Agora imagine que utiliza esse recurso <span class="var">[palavra-dica]</span> com sucesso no futuro. O que você observa?"</div></li>
+      <li><strong>Ensinar o auto-uso:</strong>
+        <div class="fala">"Se precisar do recurso, é só respirar fundo algumas vezes, dizer <span class="var">[dica]</span> e observar como se sente."</div></li>
+    </ol>
+    <p class="note"><strong>Dica:</strong> monte com o tempo uma "coleção" de experiências de domínio do paciente (anote as palavras-âncora no registro) — vira um arsenal para véspera de competição.</p>
+  </div></details>
+
+  <details><summary>Nº 6 · Metáfora ou Símbolo <span class="tag">EBL lenta 2–4</span></summary><div class="inner">
+    <p><strong>Para que serve:</strong> usar um símbolo significativo (crucifixo, medalha, tatuagem, frase de efeito, escudo do time) como gatilho de estado positivo. Bom para pacientes ligados à fé, a rituais, ou atletas supersticiosos (no bom sentido).</p>
+    <ol>
+      <li><div class="fala">"Você possui um ditado ou símbolo muito importante para você? Um crucifixo, um coração, uma frase que ajuda você a se sentir melhor?"</div></li>
+      <li><div class="fala">"Quando você pensa nesse <span class="var">[símbolo]</span>, qual imagem vem à cabeça? Qual é o melhor pensamento sobre você nesse momento? Que sentimentos surgem, e onde no corpo?"</div></li>
+      <li><strong>Instalar</strong> (repare que aqui a série é ainda mais curta):
+        <div class="fala">"Agora pense no <span class="var">[símbolo]</span>, na <span class="var">[crença positiva]</span> e no sentimento de <span class="var">[emoção]</span> em <span class="var">[sensação]</span>…" <span class="note">(série breve e lenta, 2–4; repetir verificando)</span></div></li>
+      <li><strong>Ancorar:</strong>
+        <div class="fala">"Qual palavra devo usar para você se lembrar dessa experiência? … Diga a palavra e observe." <span class="note">(+1 série)</span></div></li>
+    </ol>
+    <p class="note"><strong>Dica prática:</strong> se o símbolo é um objeto físico (medalha, pulseira), sugira que o paciente o leve para a competição — âncora de bolso.</p>
+  </div></details>
+
+  <details><summary>Nº 7 · Time de Ajudantes Prontos a Ajudar <span class="tag">crianças e adolescentes · lúdico</span></summary><div class="inner">
+    <p><strong>Para que serve:</strong> versão lúdica do RDI — a criança/adolescente monta uma "equipe" de figuras fortes (pessoas, pets, super-heróis) que a acompanha por dentro. O desenho ou a pulseira dão concretude ao recurso.</p>
+    <ol>
+      <li><strong>Identificar a equipe:</strong>
+        <div class="fala">"Você imagina alguém capaz de lidar com as coisas que lhe incomodam? Quem seria? Pode ser alguém que você conhece, alguém que já se foi, ou dos livros, da história, da mídia."</div>
+        <p class="note">Aceite tudo: o Goku vale tanto quanto a avó. O critério é a criança sentir força, não fazer sentido para você.</p></li>
+      <li><strong>Concretizar:</strong>
+        <div class="fala">"Agora faça um desenho ou pegue uma bolinha para cada pessoa da sua equipe e monte uma pulseira que vai te lembrar que elas estão com você sempre que precisar."</div>
+        <p class="note">No online: pedir para desenhar em casa com antecedência, ou montar a pulseira com material que os pais separaram.</p></li>
+      <li><strong>Técnica do zíper (incorporar o recurso):</strong>
+        <div class="fala">"Imagine que você consegue abrir um zíper nessa pessoa e entrar nela, pegando toda a força, coragem <span class="var">[recurso]</span> que ela possui. Apenas observe…" <span class="note">(EBL lentas e poucas)</span></div></li>
+      <li><strong>Praticar:</strong> usar a equipe em situações reais pequenas primeiro (prova, treino), antes das grandes.</li>
+    </ol>
+  </div></details>
+
+  <h2>Eventos recentes</h2>
+  <div class="card soft"><p><strong>Por que existem protocolos diferentes para evento recente?</strong> Nos primeiros ~2–3 meses, a memória ainda não "consolidou" — ela está em pedaços, sem virar uma história única. O protocolo padrão supõe uma memória consolidada; por isso, para eventos frescos usamos versões que trabalham fragmento por fragmento ou que restringem o foco. Regra de bolso: <strong>quanto mais recente e mais em crise, mais contido o protocolo.</strong></p></div>
+
+  <details><summary>EMD — dessensibilização focal <span class="tag">competição amanhã · pouco tempo</span></summary><div class="inner">
+    <p><strong>Para que serve:</strong> baixar rapidamente a carga de UMA cena específica, sem abrir o resto da rede de memórias. É o modo mais restrito de todos — pense nele como "curativo de emergência".</p>
+    <p><strong>Quando usar:</strong> atleta que compete amanhã e precisa tirar o peso de uma cena; pouco tempo de sessão; paciente que você ainda não conhece o suficiente para abrir material antigo.</p>
+    <ol>
+      <li>Fase 3 completa no alvo restrito (imagem, CN, CP, VoC, emoção, SUDS, corpo).</li>
+      <li>Séries <strong>curtas</strong> (12–24 movimentos, rápidas).</li>
+      <li><strong>A diferença-chave: voltar ao alvo depois de CADA série</strong> (no padrão você deixa associar; aqui não):
+        <div class="fala">"Volte à imagem. O que percebe? De 0 a 10, quanto perturba agora?"</div></li>
+      <li>Se o conteúdo derivar para outras memórias, redirecione com gentileza:
+        <div class="fala">"Interessante — a gente pode trabalhar isso depois. Por agora, volte àquela imagem de <span class="var">[alvo]</span>."</div></li>
+      <li>SUDS estabilizado (0–2) → instalar a CP no alvo → fechar com recurso (Lugar Calmo).</li>
+    </ol>
+    <p class="note"><strong>Combina bem com:</strong> RDI + padrão de futuro na mesma sessão, se der tempo. <strong>Não esqueça:</strong> o que o EMD conteve provavelmente merece protocolo completo depois da competição — anote no plano.</p>
+  </div></details>
+
+  <details><summary>EMDr — processamento contido <span class="tag">meio-termo</span></summary><div class="inner">
+    <p><strong>Para que serve:</strong> um meio-termo entre o EMD (nada de associação) e o padrão (associação livre). Aqui o paciente pode associar, mas só DENTRO do incidente e do presente.</p>
+    <p><strong>Quando usar:</strong> tempo limitado mas o alvo pede alguma elaboração; evento recente com vários ângulos; quando o EMD "aperta demais" e o padrão "abre demais".</p>
+    <ol>
+      <li>Fase 3 completa no alvo.</li>
+      <li>Séries médias (20–24), deixando associar.</li>
+      <li><strong>A "cerca":</strong> se o material derivar para memórias antigas (infância, outros traumas), retorne ao alvo:
+        <div class="fala">"Percebo que apareceu uma lembrança antiga — anoto ela para trabalharmos depois. Agora volte ao que aconteceu <span class="var">[no evento]</span>. O que você percebe?"</div></li>
+      <li>Fechar como no padrão: SUDS baixo → instalação → recurso.</li>
+    </ol>
+    <p class="note"><strong>Dica:</strong> mantenha papel ao lado para anotar as memórias antigas que aparecerem — elas são o seu mapa de alvos futuros.</p>
+  </div></details>
+
+  <details><summary>Protocolo de Evento Traumático Recente (Shapiro) <span class="tag">evento das últimas semanas</span></summary><div class="inner">
+    <p><strong>Para que serve:</strong> processar um evento recente completo (acidente, lesão, assalto, perda) respeitando o fato de que a memória ainda está fragmentada. Em vez de um alvo único, você trabalha o "filme" pedaço por pedaço.</p>
+    <ol>
+      <li><strong>Ouvir a narrativa inteira:</strong>
+        <div class="fala">"Me conte o que aconteceu, do começo ao fim, como se fosse um filme."</div>
+        <p class="note">Enquanto ouve, anote mentalmente (ou no registro) os pontos onde a voz muda, o corpo reage — esses são os fragmentos-alvo.</p></li>
+      <li><strong>Processar cada fragmento como alvo separado:</strong> Fase 3 abreviada (imagem, emoção, SUDS, corpo — CN/CP podem esperar) + séries rápidas até neutralizar cada um.</li>
+      <li><strong>Rodar o filme completo de olhos fechados:</strong>
+        <div class="fala">"Agora feche os olhos e rode o filme inteiro de novo, do início ao fim. Se algum ponto ainda incomodar, levante o dedo."</div>
+        <p class="note">Cada dedo levantado = novo mini-alvo. Repita até o filme rodar neutro do começo ao fim.</p></li>
+      <li>Rodar o filme mais uma vez com a CP em mente + checagem corporal.</li>
+      <li>Padrão de futuro para os gatilhos que continuam na vida (voltar ao local, dirigir de novo, retreinar).</li>
+    </ol>
+    <p class="note"><strong>Para iniciante:</strong> este protocolo é mais simples do que parece — é o padrão aplicado várias vezes em pedaços menores. O desafio é a paciência de não pular a etapa do filme.</p>
+  </div></details>
+
+  <details><summary>R-TEP (Elan Shapiro) <span class="tag">crise em andamento</span></summary><div class="inner">
+    <p><strong>Para que serve:</strong> quando o "evento" não acabou — a crise continua (reabilitação de lesão em curso, temporada desmoronando, luto recente, separação acontecendo). O R-TEP trata o <strong>episódio inteiro</strong>, do início até hoje, e ainda protege o paciente com recursos em toda borda da sessão.</p>
+    <ol>
+      <li><strong>Definir o episódio:</strong> "do dia da lesão até hoje", "da eliminação até agora". Combine com o paciente onde começa.</li>
+      <li><strong>Abrir SEMPRE com recurso</strong> (Lugar Calmo ou RDI) — no R-TEP isso é obrigatório, não opcional.</li>
+      <li><strong>Varredura (o "pente fino"):</strong>
+        <div class="fala">"Percorra mentalmente esse período todo enquanto acompanha o movimento, como um pente fino… quando encontrar um ponto que incomoda, me avise."</div>
+        <p class="note">EBL contínua durante a varredura. O paciente vai "esbarrando" nos pontos de perturbação — cada um vira um alvo.</p></li>
+      <li><strong>Processar cada ponto com estratégia telescópica:</strong> primeiro bem focado no ponto (estilo EMD); se não ceder, amplia o foco para o episódio (estilo EMDr). Pense num zoom que abre aos poucos.</li>
+      <li><strong>Nova varredura</strong> até não restarem pontos ativos.</li>
+      <li><strong>Fechar SEMPRE com recurso</strong> instalado, mesmo que a sessão tenha ido bem.</li>
+    </ol>
+    <p class="note"><strong>Para iniciante:</strong> o R-TEP perdoa mais erros que o padrão justamente porque é cercado de recursos e mantém o foco no episódio recente. É uma ótima porta de entrada para trabalhar crises de atletas em temporada.</p>
+  </div></details>
+
+  <h2>Futuro</h2>
+  <details><summary>Padrão de Futuro (Future Template) <span class="tag">3º tempo · fecha todo plano</span></summary><div class="inner">
+    <p><strong>Para que serve:</strong> depois de limpar o passado e os gatilhos do presente, ensaiar o futuro. É o que transforma o trabalho clínico em mudança de comportamento lá fora — para atleta, é literalmente treino mental com EBL.</p>
+    <p><strong>Quando usar:</strong> só depois que os alvos de passado e presente daquele tema estiverem processados (SUDS 0, VoC alto). Se você rodar o futuro com o passado ainda sujo, a perturbação volta.</p>
+    <ol>
+      <li><div class="fala">"Pense na situação futura que a gente escolheu: <span class="var">[a prova, a final, a conversa com o técnico]</span>. Como você gostaria de se ver agindo ali?"</div></li>
+      <li><strong>Rodar o filme com EBL rápida:</strong>
+        <div class="fala">"Feche os olhos e rode um filme dessa cena do começo ao fim, se vendo agir do jeito que você quer, com as palavras <span class="var">[CP]</span> em mente… e acompanhe."</div></li>
+      <li><strong>Checar:</strong>
+        <div class="fala">"Como foi? Alguma parte embolou, travou ou incomodou?"</div>
+        <p class="note">Perturbação em algum trecho → processa aquele trecho com séries rápidas, ou fortalece recurso (RDI) se for falta de "combustível".</p></li>
+      <li>Repetir até o filme inteiro rodar com tranquilidade e VoC alto na crença-alvo.</li>
+      <li><strong>Versão com imprevistos (não pule esta):</strong>
+        <div class="fala">"Agora rode o filme de novo, mas com desafios: chove, a torcida vaia, o juiz erra, você começa perdendo… e se veja lidando com isso do seu jeito, com <span class="var">[CP]</span>… acompanhe."</div>
+        <p class="note">É a versão com imprevistos que gera confiança robusta — a vida real nunca roda o filme perfeito.</p></li>
+    </ol>
+  </div></details>
+
+  <h2>Esporte e performance</h2>
+
+  <details><summary>Peak Performance — Protocolo de Alto Desempenho (Lendl &amp; Foster, 1997)</summary><div class="inner">
+    <p><strong>Para que serve:</strong> o protocolo clássico de EMDR para desempenho. A grande sacada: em vez de começar pelo trauma passado (como no padrão), começa pela <strong>questão de desempenho ATUAL</strong> — e deixa o passado emergir sozinho durante o processamento. Para atletas e executivos funcionais, isso faz o trabalho "fazer sentido" desde a primeira sessão.</p>
+    <p><strong>Quando usar:</strong> paciente funcional, sem trauma ativo grave, com queixa de desempenho (ansiedade de prova, bloqueio, inibição). <strong>Quando NÃO usar primeiro:</strong> se há trauma antigo não processado importante — nesse caso, padrão primeiro, Peak Performance depois.</p>
+    <p><span class="tag">1 · Anamnese</span> Explorar em detalhe: ideias sobre <em>autoridade e controle</em> (como reage a técnico/chefe/juiz), experiências de sucesso e fracasso (escola, família, esporte), como era ser "bom" na família dele, e a história do desempenho-alvo. Anote possíveis alvos passados, mas não comece por eles.</p>
+    <p><span class="tag">2 · Preparação + RDI orientada a possibilidade</span> Instalar com EBL de 6–12 movimentos (mais curta que reprocessamento), material gerado pelo cliente:</p>
+    <ul style="margin-left:18px;">
+      <li><strong>Lugar Seguro</strong> (como no padrão);</li>
+      <li><strong>Conselheiro / Coach Interno:</strong></li>
+    </ul>
+    <div class="fala">"Pense em alguém, real ou imaginado, cujo apoio e incentivo seriam valiosos para você sempre que precisar. Imagine esse coach interior falando com você, usando as palavras certas. Perceba o sentimento positivo associado."</div>
+    <ul style="margin-left:18px;">
+      <li><strong>Equipe interna de apoio</strong> (versão adulta do "time de ajudantes");</li>
+      <li><strong>Revisão de Sucesso:</strong></li>
+    </ul>
+    <div class="fala">"Lembre-se das vezes em que você se sentiu mais poderoso(a) / no controle / satisfeito(a) com seus resultados no final do dia. Concentre-se no sentimento positivo que essa lembrança traz."</div>
+    <ul style="margin-left:18px;"><li><strong>Sala Mental</strong> (protocolo próprio abaixo).</li></ul>
+    <p class="note"><strong>Detalhe que iniciante esquece:</strong> checar se a HABILIDADE existe. Se o atleta nunca treinou aquele fundamento, não há EMDR que resolva — a ansiedade é "realista". Primeiro adquirir a habilidade (treino, mentoria), depois reprocessar a ansiedade.</p>
+    <p><span class="tag">3 · Avaliação</span> Alvo = questão <strong>atual</strong> de desempenho. CN – CP – VoC – emoções – SUDS – sensação corporal, tudo como no padrão.</p>
+    <p><span class="tag">4 · Dessensibilização</span> SUDS → 0. Se repetir/loopar: ponte afetiva ou float-back — e é exatamente aí que o passado aparece ("isso me lembra o meu pai na beira do campo…"). Esses insights são o coração do protocolo.</p>
+    <p><span class="tag">5 · Instalação</span> Instalar a CP e, em seguida, <strong>Modelo Futuro</strong> com EBL.</p>
+    <p><span class="tag">6–7</span> Escaneamento corporal (reprocessar qualquer ativação) · Fechamento.</p>
+    <p><span class="tag">8 · Reavaliação</span> Usar a <strong>Sala Mental</strong> para reavaliar o alvo na sessão seguinte.</p>
+    <p class="note"><strong>CPs típicas do protocolo:</strong> "Estou informando, em vez de performando" (tira o holofote da aprovação) · "Vou encontrar o meu público certo". Adapte para esporte: "Eu jogo o meu jogo".</p>
+  </div></details>
+
+  <details><summary>Peak Performance + Psicologia Positiva (Foster, 2012)</summary><div class="inner">
+    <p><strong>Para que serve:</strong> três técnicas validadas da psicologia positiva que se encaixam na Fase 2 do Peak Performance para ampliar o efeito. A base é a teoria "ampliar e construir" de Fredrickson: emoção positiva alarga o repertório de pensamento e ação — exatamente o que o atleta precisa sob pressão.</p>
+    <p><span class="tag">1 · Forças de caráter (VIA)</span> Apresente as 6 virtudes (ou o inventário VIA gratuito online) e explore:</p>
+    <div class="fala">"Qual dessas forças é uma característica que você possui hoje? De quem você a aprendeu? Quem é um modelo que demonstra essa força? Como você pode usá-la diante de uma situação desafiadora esta semana? Que imagem ou âncora sensorial pode reforçar o uso dessa força?"</div>
+    <p class="note">As 6 virtudes: sabedoria (criatividade, curiosidade, perspectiva) · coragem (persistência, integridade, vitalidade) · humanidade (amar/ser amado, bondade, empatia) · justiça (equidade, liderança) · temperança (perdão, humildade, prudência, autorregulação) · transcendência (gratidão, esperança, humor, apreciação da beleza). A força identificada pode virar recurso de RDI — instale!</p>
+    <p><span class="tag">2 · Investigação apreciativa</span> Antes de mergulhar no problema, energizar o senso de possibilidade:</p>
+    <div class="fala">"Pense em seus atributos positivos, qualidades pessoais e nas coisas que você faz bem. Faça uma lista do que na sua vida está funcionando agora."</div>
+    <p><span class="tag">3 · Palavras positivas</span> Ajudar o paciente a achar 3–5 palavras que disparam emoção positiva nele (ex.: "leveza", "garra", "flow") — elas regulam mais rápido em momento de emoção negativa. Podem virar as palavras-âncora dos recursos.</p>
+    <p class="note"><strong>Uso prático:</strong> essas três técnicas são ótimas "primeiras sessões" com atleta — geram aliança, mapa de forças e material para RDI antes de qualquer reprocessamento.</p>
+  </div></details>
+
+  <details><summary>Sala Mental (Uneståhl / treino mental)</summary><div class="inner">
+    <p><strong>Para que serve:</strong> um "ambiente interno" que o paciente constrói e treina, com áreas para regular, ativar estados de excelência, simular desafios e recuperar. Diferença para o Lugar Seguro: o Lugar Seguro <em>estabiliza</em>; a Sala Mental estabiliza <strong>e otimiza</strong> (treino, simulação, performance). Origem: Lars-Eric Uneståhl (Inner Mental Room), treino mental de atletas de elite.</p>
+    <p><strong>Quando usar:</strong> atletas e performers em preparação; Fase 2 e Fase 8 do Peak Performance; pacientes que já dominam o Lugar Calmo e querem "subir de nível".</p>
+    <p><strong>Construção — 5 áreas (quanto mais sensorial, melhor):</strong></p>
+    <ol>
+      <li><strong>Entrada / acesso seguro</strong> — uma porta, corredor, elevador, trilha. Atravessar a entrada já sinaliza ao corpo "modo interno".
+        <div class="fala">"Imagine a entrada da sua sala mental. Como ela é? Atravesse com calma e observe o que sente ao entrar."</div></li>
+      <li><strong>Centro de regulação</strong> — respiração, uma luz que regula, uma cadeira de recuperação, um painel onde ele "vê" o próprio estado.
+        <div class="fala">"Nessa área existe tudo o que te acalma: ajuste a luz, sente na cadeira, respire… note o corpo desacelerando."</div></li>
+      <li><strong>Área de recursos</strong> — onde ficam as memórias de excelência instaladas (confiança, potência, precisão, foco).
+        <div class="fala">"Aqui ficam guardados os seus melhores momentos. Escolha um, entre nele, sinta no corpo…" <span class="note">(instalar com EBL lenta)</span></div></li>
+      <li><strong>Sala de simulação</strong> — o "simulador" de competições, provas, conversas difíceis.
+        <div class="fala">"Nessa sala você pode treinar qualquer situação. Coloque na tela a <span class="var">[situação]</span> e ensaie do seu jeito."</div></li>
+      <li><strong>Área de recuperação</strong> — lago, jardim, cápsula, luz — para "descanso neural" após esforço.</li>
+    </ol>
+    <p><strong>Protocolo resumido (6 fases):</strong> 1 Indução (respiração + grounding) → 2 Construção do ambiente → 3 Centro regulador → 4 Sala de performance (memória de excelência + potência no corpo) → 5 Simulação (desafio futuro + adaptação ao erro) → 6 Consolidação e fechamento. Combine com EBL, âncoras corporais e respiração.</p>
+    <p class="note">⚠ <strong>Cuidados:</strong> em dissociação, TEPT complexo, psicose ou imagética intrusiva — primeiro estabilização, depois otimização; a visualização pode ATIVAR em vez de regular. Base conceitual: neuroplasticidade, imagética motora (visualizar ativa áreas do movimento real) e memória dependente de estado. Relaciona-se ao estado de <em>flow</em> (Csikszentmihalyi).</p>
+  </div></details>
+
+  <details><summary>Vídeo Mental + EBL — Otimização de Performance (Castello, 2018)</summary><div class="inner">
+    <p><strong>Para que serve:</strong> protocolo de 5 "passagens" que combina visualização guiada com EBL rápida contínua. Vai do padrão atual (com os defeitos) até o futuro de excelência. É estruturado e fácil de conduzir — ótimo para quem está começando com atletas. Adapte o script à situação (competição, prova, concurso).</p>
+    <p class="note"><strong>Mecânica:</strong> EBL rápida contínua DURANTE toda a visualização de cada passagem (diferente do padrão, onde a EBL vem em séries). No online: paciente faz tapping contínuo ou você roda a bolinha durante a cena inteira.</p>
+    <p><span class="tag">1ª passagem · padrão atual</span> Objetivo: identificar bloqueios, tensões e pensamentos espontâneos.</p>
+    <div class="fala">"Feche os olhos. Imagine a situação em que deseja apresentar sua melhor performance. Veja os detalhes do ambiente, as pessoas. Agora permita que o vídeo aconteça exatamente como costuma acontecer na realidade, do começo ao fim. Não tente mudar nada. Observe o que acontece no seu corpo, suas emoções, seus pensamentos, qualquer tensão ou insegurança."</div>
+    <div class="fala">Depois da passagem: "O que percebe agora? O que mudou? O que surgiu?"</div>
+    <p class="note">Anote os pontos de travamento que ele relatar — se forem muito carregados, podem indicar necessidade de reprocessamento formal antes de seguir.</p>
+    <p><span class="tag">2ª passagem · vídeo de sucesso</span> Objetivo: criar a representação da execução ideal.</p>
+    <div class="fala">"Agora vamos criar uma nova versão desse vídeo. Imagine-se realizando essa atividade exatamente da forma que gostaria. Seu corpo sabe o que fazer. Sua atenção permanece focada. Você executa com naturalidade e precisão… Veja-se concluindo da melhor forma possível."</div>
+    <div class="fala">"O vídeo ficou mais nítido? A confiança aumentou? O corpo parece mais preparado?"</div>
+    <p><span class="tag">3ª passagem · integração corporal</span> Objetivo: ligar a imagem de sucesso às sensações físicas (instalação somática).</p>
+    <div class="fala">"Repita a cena, agora observando principalmente o corpo: postura, equilíbrio, força, respiração, energia… Permita que seu corpo memorize essa forma de funcionar. Observe a estabilidade, a potência, a fluidez."</div>
+    <p><span class="tag">4ª passagem · pressão</span> Objetivo: manter a performance com estressores reais.</p>
+    <div class="fala">"Mesma situação, mas agora com fatores de pressão: público, torcida, avaliadores, tempo limitado… Observe-se mantendo o foco, recuperando-se rápido de qualquer distração, permanecendo regulado(a), executando com confiança."</div>
+    <div class="fala">"O que percebe agora? Quanto essa cena parece natural para você?"</div>
+    <p><span class="tag">5ª passagem · futuro de excelência (opcional)</span> Objetivo: instalar a memória futura adaptativa.</p>
+    <div class="fala">"Imagine sua próxima situação real: chegando ao local, se preparando, aquecendo, respirando, confiante… iniciando, usando todos os recursos, executando sua melhor performance, finalizando com satisfação."</div>
+    <div class="fala">"Quando pensa nessa situação futura agora, o que acredita sobre você?" <span class="note">— instalar a CP escolhida (ex.: "Eu confio em mim", "Meu corpo sabe o que fazer", "Estou preparado(a)") com nova série.</span></div>
+    <p><span class="tag">Fechamento</span></p>
+    <div class="fala">"Permita que essas experiências se integrem. Seu cérebro acabou de realizar diversos ensaios neurais de sucesso — essas redes continuarão se fortalecendo nas próximas horas e dias."</div>
+    <p class="note"><strong>Treino autônomo:</strong> vídeo mental diário de 3–5 min, com a mesma respiração e as sensações instaladas. <strong>Sequência clássica na semana da competição:</strong> passagens 2–4 em sessão + treino autônomo diário + EMD de emergência se surgir cena perturbadora.</p>
+  </div></details>
+
+  <details><summary>Bloqueios de gesto ("yips", travas) <span class="tag">saque, pênalti, tacada</span></summary><div class="inner">
+    <p><strong>O que são:</strong> falhas involuntárias num gesto automatizado (o saque que não sai, o pênalti que trava). Pelo modelo do EMDR, o gesto ficou "ligado" a uma rede de memória perturbadora — o corpo lembra do erro e se protege travando. Por isso o alvo principal é a <strong>memória do corpo</strong>.</p>
+    <p><strong>Sequência de alvos (passado → presente → futuro):</strong></p>
+    <ol>
+      <li><strong>Primeira vez</strong> que o gesto falhou:
+        <div class="fala">"Qual foi a primeira vez que esse <span class="var">[saque, pênalti, tacada]</span> travou? O que estava acontecendo na sua vida naquela época?"</div></li>
+      <li><strong>Pior vez:</strong>
+        <div class="fala">"E a pior de todas? A que ainda dói lembrar?"</div></li>
+      <li><strong>Medo atual:</strong>
+        <div class="fala">"Quando você pensa em executar amanhã, o que sente e onde sente?"</div>
+        <p class="note">Use a lista de sensações corporais — "mão que trava", "braço pesado" são alvos legítimos mesmo sem imagem.</p></li>
+      <li><strong>Futuro:</strong> padrão de futuro do gesto fluindo, com versão sob pressão.</li>
+    </ol>
+    <p class="note"><strong>Para iniciante:</strong> processar cada alvo com o protocolo padrão completo (Fase 3 inteira em cada um). Não tente atalhar juntando tudo num alvo só — yips melhora alvo por alvo. E cuidado com expectativa: combine com o atleta que o objetivo é o corpo voltar a decidir, não "garantia de acerto".</p>
+  </div></details>
+
+  <details><summary>Lesão esportiva <span class="tag">trauma físico + medo do retorno</span></summary><div class="inner">
+    <p><strong>Por que EMDR:</strong> a lesão grave é um trauma como outro qualquer — tem cena, som, dor, impotência, e muitas vezes um "acabou minha carreira" registrado no auge do susto. Sem processar, ela volta como medo de reincidência e proteção muscular involuntária no retorno.</p>
+    <p><strong>Mapa de alvos em ordem típica:</strong></p>
+    <ol>
+      <li><strong>O momento da lesão:</strong>
+        <div class="fala">"Quando você pensa na hora da lesão, qual é a pior parte — a imagem, o som, a dor, o pensamento de 'acabou'?"</div>
+        <p class="note">Se a lesão é recente, trate como evento recente (protocolo de Shapiro ou R-TEP); se antiga, padrão.</p></li>
+      <li><strong>Diagnóstico e cirurgia</strong> (a frase do médico, o hospital, a anestesia).</li>
+      <li><strong>Momentos da reabilitação</strong> (dores, recaídas, ver o time jogar sem ele).</li>
+      <li><strong>Medo de reincidência</strong> (gatilho presente):
+        <div class="fala">"O que passa pela sua cabeça quando o movimento chega perto do jeito que você se machucou?"</div></li>
+      <li><strong>Retorno — padrão de futuro:</strong>
+        <div class="fala">"Rode o filme do seu retorno: entrando em quadra/campo, fazendo exatamente o movimento em que se machucou, com o corpo respondendo… e acompanhe."</div></li>
+    </ol>
+    <p class="note"><strong>Dica:</strong> alinhe com o fisioterapeuta o que é medo "útil" (proteção real, fase da reabilitação) e o que é medo "residual" (trauma). EMDR trata o segundo; o primeiro se respeita.</p>
+  </div></details>
+
+  <details><summary>Ansiedade pré-competitiva <span class="tag">roteiro completo</span></summary><div class="inner">
+    <p><strong>A lógica:</strong> a ansiedade da véspera quase nunca nasce na véspera — ela é alimentada por memórias-fonte (cobranças precoces, um vexame, um corte, decepcionar alguém importante). O roteiro vai da fonte ao futuro.</p>
+    <ol>
+      <li><strong>Float-back a partir do sintoma:</strong>
+        <div class="fala">"Fique com essa sensação de véspera de prova, com as palavras <span class="var">[CN, ex.: 'vou falhar']</span> e com o que sente no corpo… e deixe a mente flutuar para trás no tempo, sem forçar… qual é a primeira vez que você se lembra de ter se sentido assim?"</div>
+        <p class="note">Anote TODAS as memórias que aparecerem — normalmente 2 a 4. Elas são seu plano de tratamento.</p></li>
+      <li><strong>Processar as fontes</strong> com o protocolo padrão, uma a uma, da mais antiga para a mais recente.</li>
+      <li><strong>Processar os gatilhos atuais:</strong> a véspera, o aquecimento, a escalação, o olhar do técnico — cada um como mini-alvo.</li>
+      <li><strong>RDI de rotina pré-competitiva:</strong> montar com o atleta uma sequência (respiração + palavra-âncora + gesto) e instalar com EBL lenta.</li>
+      <li><strong>Padrão de futuro da competição</strong>, incluindo a versão com imprevistos.</li>
+    </ol>
+    <p class="note"><strong>Expectativa realista:</strong> o objetivo não é zerar a ativação — atleta precisa de ativação. É transformar "pânico que atrapalha" em "energia que joga junto". Explique isso ao atleta; muda a relação dele com o próprio corpo.</p>
+  </div></details>
+
+  <details><summary>Adolescentes — adaptações práticas <span class="tag">inclusive atletas juvenis</span></summary><div class="inner">
+    <p><strong>O princípio:</strong> o protocolo é o mesmo de adulto — o que muda é a linguagem, a dose e o entorno (família, escola, clube). Adolescente processa RÁPIDO; o desafio é o enquadre, não a técnica.</p>
+    <ul style="margin-left:18px;">
+      <li><strong>Enquadre:</strong> consentimento dos responsáveis + assentimento do adolescente. Combine explicitamente, na frente de todos, o que será e o que NÃO será compartilhado com pais, treinadores e clube — isso define a confiança de todo o processo.</li>
+      <li><strong>Linguagem das cognições:</strong> aceite as palavras exatas dele ("não presto pra isso", "sou zika") sem corrigir para o "português do manual". A crença é dele.</li>
+      <li><strong>Escalas:</strong> SUDS/VoC com gestos (mãos afastadas = tamanho da perturbação), desenhos, régua visual ou "nota de jogo" de 0 a 10.</li>
+      <li><strong>EBL:</strong> séries de 12–20 (mais curtas que adulto); alterne visual e borboleta; no online, combine antes um app ou o dedo na tela.</li>
+      <li><strong>Ritmo da sessão:</strong> blocos curtos de reprocessamento intercalados com pausas e recurso; encerre SEMPRE regulado (jogo rápido, respiração, lugar calmo).</li>
+      <li><strong>Falas que funcionam:</strong>
+        <div class="fala">"Seu cérebro é como um videogame que travou numa fase. A gente vai destravar para você seguir o jogo."</div>
+        <div class="fala">"Não tem resposta certa. O que vier na sua cabeça está valendo."</div></li>
+      <li><strong>Esporte juvenil:</strong> inclua a família no manejo da pressão por resultado. Alvos frequentes: comparação com colegas, treinador crítico, medo de perder vaga/bolsa, e o peso de "ser o investimento da família".</li>
+    </ul>
+    <p class="note"><strong>Sinal de alerta para iniciante:</strong> adolescente que dissocia (olhar vazio, "sumiu" da sessão) → pare a EBL, traga para o presente (nome, 5 coisas que vê, pés no chão) e reforce a Fase 2 antes de continuar em outra sessão.</p>
+  </div></details>
+</section>
+
+<!-- ================= REGISTRO ================= -->
+<section class="tab" id="tab-registro">
+  <div class="eyebrow">Sessão atual · dados só neste navegador</div>
+  <h1>Registro da sessão</h1>
+  <div class="rule"></div>
+  <div class="card soft">
+    <p class="note">⚠ LGPD: use identificação em código (ex.: iniciais), nunca nome completo. Nada é enviado a servidor — os dados existem só nesta página e somem ao fechar, a menos que você exporte.</p>
+    <div class="field" style="margin-top:8px;"><label>Identificação (código)</label><input type="text" id="regId" placeholder="Ex.: paciente M.R. · 08/07/2026"></div>
+  </div>
+  <table class="log" id="logTable">
+    <tr><th style="width:90px;">Hora</th><th style="width:160px;">Item</th><th>Conteúdo</th></tr>
+  </table>
+  <div style="margin-top:14px; display:flex; gap:10px;">
+    <button class="btn" onclick="copyLog()">⧉ Copiar registro — colar no prontuário</button>
+    <button class="btn" onclick="exportLog()">⬇ Exportar (.txt)</button>
+    <button class="btn ghost" onclick="novoPaciente()">✦ Novo paciente — limpar tudo</button>
+  </div>
+</section>
+
+</main>
+
+<footer>Sistema de apoio à prática de profissional habilitada em EMDR · não substitui formação, supervisão nem julgamento clínico · Pamella Braz · Psicóloga · CRP 18/02439</footer>
+
+<script>
+/* ============ dados das palhetas ============ */
+const CN1 = ["Eu não mereço o amor","Sou uma má pessoa","Sou terrível","Sou inútil (inadequado(a))","Sou vergonhoso(a)","Não sou capaz de ser amado(a)","Não sou bom (boa) o suficiente","Mereço apenas coisas ruins","Sou constantemente prejudicado(a)","Sou feio(a) (o meu corpo é horrível)","Eu não mereço…","Sou burro(a) (não sou inteligente o suficiente)","Sou insignificante (não tenho importância)","Sou uma decepção","Eu mereço morrer","Eu mereço ser miserável","Eu sou diferente (não me encaixo)"];
+const CN2 = ["Eu deveria ter feito algo","Eu fiz algo errado","Eu deveria ter percebido","Sou vergonhoso(a) / Sou burro(a) / Sou uma má pessoa"];
+const CN3 = ["Não consigo confiar em ninguém","Não sou capaz de me proteger","Estou em perigo","Não estou seguro(a)","Não é seguro sentir (demonstrar) as minhas emoções"];
+const CN4 = ["Não estou no controle","Sou impotente (desamparado(a))","Sou fraco(a)","Não consigo obter o que desejo","Não consigo me defender","Não consigo desabafar","Não sou digno(a) de confiança","Não consigo confiar em mim mesmo(a)","Não consigo confiar no meu bom-senso","Sou um fracasso (irei falhar)","Não consigo ter sucesso","Preciso ser perfeito(a) (agradar a todos)","Não consigo suportar","Sou inadequado(a)"];
+const CP1 = ["Eu mereço o amor; eu sou digno(a) de ser amado(a)","Sou uma pessoa boa (amorosa)","Estou bem assim","Eu tenho mérito; eu sou digno(a)","Eu posso ser honrado(a)","Eu posso ser amado(a)","Eu mereço (estou bem / ok)","Eu mereço coisas boas","Eu sou (posso ser) saudável","Tenho boa aparência (atraente / adorável)","Eu posso ter (mereço)","Sou inteligente (capaz de aprender)","Sou significante (tenho importância)","Sinto-me bem do jeito que sou","Eu mereço viver","Eu mereço ser feliz"];
+const CP2 = ["Eu fiz o melhor que pude","Eu aprendi (posso aprender) com isso","Eu faço o melhor que consigo (sou capaz de aprender)"];
+const CP3 = ["Posso escolher em quem confiar","Posso (aprender a) cuidar de mim","Acabou; estou seguro(a) agora","Posso sentir (demonstrar) as minhas emoções com segurança"];
+const CP4 = ["Consigo controlar o que está ao meu alcance","Agora possuo escolhas","Sou forte","Consigo obter o que desejo","Consigo expor as minhas necessidades","Posso escolher desabafar","Sou confiável","Posso (aprender a) confiar em mim","Posso confiar no meu bom-senso","Consigo ter sucesso","Posso ser eu mesmo(a) (cometer erros)","Consigo dar conta","Sou adequado(a)"];
+const EMONEG = ["Tristeza","Pavor","Culpa","Vergonha","Inveja","Desprezo","Nostalgia","Medo","Humilhação","Pesar","Raiva","Apatia","Melancolia","Covardia","Ansiedade","Desespero","Remorso","Nojo","Depressão","Ofensa","Angústia","Pânico","Solidão","Temor","Dor","Tédio"];
+const EMOPOS = ["Alegria","Prazer","Paz","Entusiasmo","Paixão","Motivação","Gratidão","Alívio","Esperança","Satisfação","Euforia","Desabafo","Orgulho","Felicidade","Tranquilidade","Consolo","Animação","Enfrentamento","Bondade","Calma","Serenidade","Harmonia","Sossego","Sensibilidade","Generosidade"];
+const SENS = ["Aperto no peito","Borboleta na barriga","Cabeça rodando","Dor na barriga","Meu corpo não para","Cabeça bagunçada","Ouvido tampado","Pescoço doendo","Pressão no pescoço","Aperto no estômago","Nó na garganta","Cabeça atrapalhada","Coração acelerado","Dor de barriga","Pressão na cabeça","Falta de ar","Ânsia de vômito","Coração saindo pela boca","Vontade de vomitar","Mexido(a) por dentro","Não consigo respirar","Nó no estômago","Sensação ruim no peito","Pressão no peito","Zumbido na cabeça","Braço dormente"];
+
+function fill(id, arr){ const el=document.getElementById(id); if(el) el.innerHTML = arr.map(x=>"<div>"+x+"</div>").join(""); }
+fill('palCN1',CN1); fill('palCN2',CN2.map((x,i)=>i<3?x+"*":x)); fill('palCN3',CN3); fill('palCN4',CN4);
+fill('palCP1',CP1); fill('palCP2',CP2); fill('palCP3',CP3); fill('palCP4',CP4);
+fill('palEmoNeg',EMONEG); fill('palEmoPos',EMOPOS); fill('palSens',SENS);
+
+/* chips fase 3 */
+function chips(id, arr, input){ const el=document.getElementById(id); if(!el) return;
+  el.innerHTML = arr.map(x=>'<span class="chip">'+x+'</span>').join('');
+  el.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{ document.getElementById(input).value=c.textContent; el.querySelectorAll('.chip').forEach(o=>o.classList.remove('sel')); c.classList.add('sel'); });
+}
+chips('cnChips', [...CN1.slice(0,6),"Sou um fracasso (irei falhar)","Não estou no controle","Não estou seguro(a)","Não consigo ter sucesso"], 'f3cn');
+chips('cpChips', ["Consigo ter sucesso","Sou forte","Estou bem assim","Eu fiz o melhor que pude","Consigo dar conta","Acabou; estou seguro(a) agora","Consigo controlar o que está ao meu alcance","Sou digno(a) de ser amado(a)"], 'f3cp');
+chips('emoChips', ["Medo","Vergonha","Raiva","Tristeza","Ansiedade","Culpa","Frustração","Pânico","Nojo","Impotência"], 'f3emo');
+
+/* ============ navegação ============ */
+const nav = document.getElementById('nav');
+nav.querySelectorAll('button').forEach(b=>b.onclick=()=>{
+  nav.querySelectorAll('button').forEach(o=>o.classList.remove('active')); b.classList.add('active');
+  document.querySelectorAll('section.tab').forEach(s=>s.classList.remove('active'));
+  document.getElementById('tab-'+b.dataset.tab).classList.add('active');
+});
+const faseSteps = document.getElementById('faseSteps');
+faseSteps.querySelectorAll('button').forEach(b=>b.onclick=()=>{
+  faseSteps.querySelectorAll('button').forEach(o=>o.classList.remove('active')); b.classList.add('active');
+  document.querySelectorAll('.fase').forEach(f=>f.classList.remove('active'));
+  document.getElementById('fase-'+b.dataset.f).classList.add('active');
+});
+
+/* ============ escalas ============ */
+const scaleVals = {};
+document.querySelectorAll('.scale').forEach(sc=>{
+  const name = sc.dataset.scale;
+  const isVoc = name.startsWith('voc');
+  const from = isVoc?1:0, to = isVoc?7:10;
+  for(let i=from;i<=to;i++){
+    const b=document.createElement('button'); b.textContent=i;
+    b.onclick=()=>{ sc.querySelectorAll('button').forEach(o=>o.classList.remove('sel')); b.classList.add('sel'); scaleVals[name]=i;
+      const lbl=document.getElementById(name.replace('suds','sudsSel').replace('voc','vocSel')); if(lbl) lbl.textContent=i; };
+    sc.appendChild(b);
+  }
+});
+
+/* ============ registro ============ */
+const logRows = [];
+function logAdd(item, txt){ if(!txt) return alert('Nada para salvar.');
+  const t=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  logRows.push({t,item,txt});
+  const tr=document.createElement('tr'); tr.innerHTML='<td>'+t+'</td><td>'+item+'</td><td>'+txt.replace(/</g,'&lt;')+'</td>';
+  document.getElementById('logTable').appendChild(tr);
+}
+function salvarFase3(){
+  const v=id=>document.getElementById(id).value||'—';
+  logAdd('Fase 3 · Avaliação',
+    'Alvo: '+v('f3alvo')+' | Imagem: '+v('f3img')+' | CN: '+v('f3cn')+' | CP: '+v('f3cp')+
+    ' | VoC: '+(scaleVals.voc3??'—')+' | Emoções: '+v('f3emo')+' | SUDS: '+(scaleVals.suds3??'—')+' | Corpo: '+v('f3corpo'));
+  alert('Avaliação salva no registro.');
+}
+function logSuds4(){ if(scaleVals.suds4==null) return alert('Selecione o SUDS.'); logAdd('Fase 4 · SUDS','SUDS = '+scaleVals.suds4); }
+function logVoc5(){ if(scaleVals.voc5==null) return alert('Selecione o VoC.'); logAdd('Fase 5 · VoC','VoC = '+scaleVals.voc5); }
+function exportLog(){
+  const id=document.getElementById('regId').value||'sessão';
+  let txt='REGISTRO DE SESSÃO EMDR · '+id+'\nPamella Braz · Psicóloga · CRP 18/02439\n'+new Date().toLocaleString('pt-BR')+'\n\n';
+  logRows.forEach(r=>txt+='['+r.t+'] '+r.item+'\n'+r.txt+'\n\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([txt],{type:'text/plain;charset=utf-8'}));
+  a.download='registro-emdr-'+new Date().toISOString().slice(0,10)+'.txt'; a.click();
+}
+function limparLog(){ if(confirm('Apagar o registro desta sessão?')){ logRows.length=0;
+  document.getElementById('logTable').innerHTML='<tr><th style="width:90px;">Hora</th><th style="width:160px;">Item</th><th>Conteúdo</th></tr>'; } }
+
+function copyEblLink(){
+  const txt='Olá! Para a nossa sessão, abra este link: https://pamellabraz.com.br/paciente — toque em "Tenho um código de sessão" e digite o código que eu te passar.';
+  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(()=>alert('Link copiado! Cole no WhatsApp do paciente.')); }
+  else { const ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); alert('Link copiado!'); }
+}
+/* ============ copiar registro / novo paciente ============ */
+function buildLogText(){
+  const id=document.getElementById('regId').value||'sessão';
+  let txt='REGISTRO DE SESSÃO EMDR · '+id+'\nPamella Braz · Psicóloga · CRP 18/02439\n'+new Date().toLocaleString('pt-BR')+'\n\n';
+  logRows.forEach(r=>txt+='['+r.t+'] '+r.item+'\n'+r.txt+'\n\n');
+  return txt;
+}
+function copyLog(){
+  if(!logRows.length) return alert('O registro está vazio.');
+  const txt=buildLogText();
+  const fallback=()=>{ const ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy'); ta.remove(); alert('Registro copiado! Cole no prontuário do paciente.'); };
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(()=>alert('Registro copiado! Cole no prontuário do paciente.')).catch(fallback);
+  } else fallback();
+}
+function novoPaciente(){
+  if(!confirm('Começar outro paciente? Isso apaga o registro e limpa todos os campos da sessão.')) return;
+  logRows.length=0;
+  document.getElementById('logTable').innerHTML='<tr><th style="width:90px;">Hora</th><th style="width:160px;">Item</th><th>Conteúdo</th></tr>';
+  document.querySelectorAll('main input[type=text], main textarea').forEach(i=>i.value='');
+  document.querySelectorAll('.scale button.sel').forEach(b=>b.classList.remove('sel'));
+  document.querySelectorAll('.chip.sel').forEach(c=>c.classList.remove('sel'));
+  document.querySelectorAll('.bigsel').forEach(sp=>sp.textContent='–');
+  for(const k in scaleVals) delete scaleVals[k];
+  alert('Tudo limpo. Pronto para o próximo paciente.');
+}
+/* ============ anotações por etapa ============ */
+function addNotes(container, titulo){
+  const wrap=document.createElement('div');
+  wrap.className='field'; wrap.style.marginTop='10px';
+  const lab=document.createElement('label'); lab.textContent='Anotações';
+  const ta=document.createElement('textarea'); ta.placeholder='Observações desta etapa…';
+  const bt=document.createElement('button'); bt.className='btn small'; bt.style.marginTop='6px'; bt.textContent='Salvar no registro';
+  bt.onclick=()=>{ if(!ta.value) return alert('Nada para salvar.'); logAdd(titulo, ta.value); ta.value=''; bt.textContent='✓ Salvo'; setTimeout(()=>bt.textContent='Salvar no registro',1200); };
+  wrap.appendChild(lab); wrap.appendChild(ta); wrap.appendChild(bt); container.appendChild(wrap);
+}
+document.querySelectorAll('#tab-outros details').forEach(d=>{
+  const t=d.querySelector('summary').textContent.replace(/\s+/g,' ').trim();
+  addNotes(d.querySelector('.inner')||d, t);
+});
+[2,4,5,6,7,8].forEach(n=>{
+  const card=document.querySelector('#fase-'+n+' .card');
+  if(card) addNotes(card, 'Fase '+n);
+});
+</script>
+
+<div id="lock" style="position:fixed;inset:0;background:var(--pedra-escura);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;">
+  <div style="font-family:'Cormorant Garamond',serif;font-size:28px;color:var(--bruma);">Pamella Braz</div>
+  <div style="font-size:11px;letter-spacing:3px;color:var(--areia);text-transform:uppercase;font-weight:600;">Sistema EMDR &middot; &aacute;rea restrita</div>
+  <input type="password" id="lockInput" autocomplete="off" style="padding:12px 16px;border-radius:10px;border:none;font-size:20px;text-align:center;letter-spacing:5px;width:220px;">
+  <button class="btn" onclick="unlock()">Entrar</button>
+  <div id="lockMsg" style="color:var(--areia);font-size:13px;min-height:18px;"></div>
+</div>
+<script>
+if(sessionStorage.getItem('pb_auth')==='1') document.getElementById('lock').style.display='none';
+else setTimeout(function(){document.getElementById('lockInput').focus();},200);
+function unlock(){ if(document.getElementById('lockInput').value.trim()==='emdr1'){ sessionStorage.setItem('pb_auth','1'); document.getElementById('lock').style.display='none'; }
+  else document.getElementById('lockMsg').textContent='Senha incorreta.'; }
+document.getElementById('lockInput').addEventListener('keydown',function(e){ if(e.key==='Enter') unlock(); });
+</script>
+</body>
+</html>
