@@ -99,6 +99,12 @@ details .inner { padding: 2px 18px 14px 18px; border-top: 1px solid #eee6d4; }
 table.log { width: 100%; border-collapse: collapse; background: var(--branco); border: 1px solid var(--areia); border-radius: 10px; overflow: hidden; font-size: 13.5px; }
 table.log th { background: var(--verde-pedra); color: var(--bruma); text-align: left; padding: 8px 12px; font-size: 12px; letter-spacing: 1px; }
 table.log td { padding: 7px 12px; border-top: 1px solid #eee6d4; vertical-align: top; }
+@media (max-width: 640px){
+  header{padding:10px 14px; gap:10px;}
+  main{padding:18px 12px 40px 12px;}
+  h1{font-size:24px;}
+  .scale button{min-width:38px; font-size:17px; padding:8px 0;}
+}
 footer { text-align: center; font-size: 11.5px; color: var(--salvia); padding: 24px; border-top: 1px solid var(--areia); }
 .bigsel { font-size: 26px; font-weight: 700; color: var(--verde-pedra); min-width: 40px; display: inline-block; }
 </style>
@@ -115,6 +121,7 @@ footer { text-align: center; font-size: 11.5px; color: var(--salvia); padding: 2
     <button data-tab="registro">Registro</button>
     <button onclick="window.open('https://pamellabraz.com.br/ebl.html#terapeuta','_blank'); return false;" style="background:var(--areia); color:var(--pedra-escura); border-color:var(--areia); font-weight:700;">▶ EBL · site do paciente</button>
   </nav>
+  <div id="clock" title="Clique para zerar o timer" style="margin-left:auto; font-variant-numeric:tabular-nums; font-size:13px; color:var(--areia); cursor:pointer; letter-spacing:1.5px; font-weight:600;">00:00</div>
 </header>
 
 <main>
@@ -192,13 +199,14 @@ footer { text-align: center; font-size: 11.5px; color: var(--salvia); padding: 2
   <div class="fase" id="fase-4">
     <div class="card">
       <strong>Dessensibilização</strong> — séries rápidas de 24–30 (aba EBL).
-      <div class="fala">"Traga a imagem, as palavras <span class="var">[CN]</span> e note onde sente isso no corpo… e acompanhe."</div>
+      <div class="fala">"Traga a imagem, as palavras <span class="var dynCN">[CN]</span> e note onde sente isso no corpo… e acompanhe."</div>
       <div class="fala">Entre séries: "Respire fundo… solta. O que você percebe agora?" → "Vá com isso."</div>
       <div class="fala">Fim de canal (2 séries neutras): "Quando você volta para a experiência original, o que percebe agora?"</div>
       <div class="fala">Alvo neutro: "De 0 a 10, quanto perturba agora?"</div>
       <div class="field"><label>SUDS na checagem — <span class="bigsel" id="sudsSel4">–</span> / 10</label>
         <div class="scale" data-scale="suds4"></div>
-        <button class="btn small" onclick="logSuds4()">Registrar SUDS</button></div>
+        <button class="btn small" onclick="logSuds4()">Registrar SUDS</button>
+        <div class="note" id="sudsCurve" style="margin-top:6px;"></div></div>
       <details><summary>Se travar (looping): interweaves</summary><div class="inner">
         <div class="fala"><em>Responsabilidade:</em> "De quem era a responsabilidade — de um adulto ou de uma criança de <span class="var">[idade]</span> anos?"</div>
         <div class="fala"><em>Segurança:</em> "Aquilo acabou? Você está seguro(a) agora?"</div>
@@ -213,12 +221,13 @@ footer { text-align: center; font-size: 11.5px; color: var(--salvia); padding: 2
   <div class="fase" id="fase-5">
     <div class="card">
       <strong>Instalação da cognição positiva</strong> — séries rápidas.
-      <div class="fala">"As palavras <span class="var">[CP]</span> ainda combinam, ou existe outra frase positiva que combine melhor agora?"</div>
-      <div class="fala">"Pense na experiência original e nas palavras <span class="var">[CP]</span>. De 1 a 7, quão verdadeiras se sentem agora?"</div>
+      <div class="fala">"As palavras <span class="var dynCP">[CP]</span> ainda combinam, ou existe outra frase positiva que combine melhor agora?"</div>
+      <div class="fala">"Pense na experiência original e nas palavras <span class="var dynCP">[CP]</span>. De 1 a 7, quão verdadeiras se sentem agora?"</div>
       <div class="fala">"Segure as duas juntas — a lembrança e as palavras — e acompanhe."</div>
       <div class="field"><label>VoC — <span class="bigsel" id="vocSel5">–</span> / 7</label>
         <div class="scale" data-scale="voc5"></div>
-        <button class="btn small" onclick="logVoc5()">Registrar VoC</button></div>
+        <button class="btn small" onclick="logVoc5()">Registrar VoC</button>
+        <div class="note" id="vocCurve" style="margin-top:6px;"></div></div>
       <div class="fala">Se não sobe: "O que impede de ser um 7?" <span class="note">(crença bloqueadora → novo alvo)</span></div>
     </div>
   </div>
@@ -226,7 +235,7 @@ footer { text-align: center; font-size: 11.5px; color: var(--salvia); padding: 2
   <div class="fase" id="fase-6">
     <div class="card">
       <strong>Checagem corporal</strong>
-      <div class="fala">"Feche os olhos. Traga a experiência original e as palavras <span class="var">[CP]</span>… percorra mentalmente o corpo, da cabeça aos pés, e me diga onde encontrar qualquer sensação."</div>
+      <div class="fala">"Feche os olhos. Traga a experiência original e as palavras <span class="var dynCP">[CP]</span>… percorra mentalmente o corpo, da cabeça aos pés, e me diga onde encontrar qualquer sensação."</div>
       <p class="note">Desconforto → séries rápidas até dissolver. Sensação boa → 1–2 séries para fortalecer.</p>
     </div>
   </div>
@@ -242,7 +251,7 @@ footer { text-align: center; font-size: 11.5px; color: var(--salvia); padding: 2
   <div class="fase" id="fase-8">
     <div class="card">
       <strong>Reavaliação (sessão seguinte)</strong>
-      <div class="fala">"Como foi a semana? O que você notou? … Volte àquela lembrança: o que aparece agora? De 0 a 10, quanto perturba? E as palavras <span class="var">[CP]</span>, de 1 a 7?"</div>
+      <div class="fala">"Como foi a semana? O que você notou? … Volte àquela lembrança: o que aparece agora? De 0 a 10, quanto perturba? E as palavras <span class="var dynCP">[CP]</span>, de 1 a 7?"</div>
       <p class="note">SUDS &gt; 0 → retomar Fase 4. Estável → próximo alvo do plano de 3 tempos ou Padrão de Futuro.</p>
     </div>
   </div>
@@ -526,13 +535,13 @@ footer { text-align: center; font-size: 11.5px; color: var(--salvia); padding: 2
     <ol>
       <li><div class="fala">"Pense na situação futura que a gente escolheu: <span class="var">[a prova, a final, a conversa com o técnico]</span>. Como você gostaria de se ver agindo ali?"</div></li>
       <li><strong>Rodar o filme com EBL rápida:</strong>
-        <div class="fala">"Feche os olhos e rode um filme dessa cena do começo ao fim, se vendo agir do jeito que você quer, com as palavras <span class="var">[CP]</span> em mente… e acompanhe."</div></li>
+        <div class="fala">"Feche os olhos e rode um filme dessa cena do começo ao fim, se vendo agir do jeito que você quer, com as palavras <span class="var dynCP">[CP]</span> em mente… e acompanhe."</div></li>
       <li><strong>Checar:</strong>
         <div class="fala">"Como foi? Alguma parte embolou, travou ou incomodou?"</div>
         <p class="note">Perturbação em algum trecho → processa aquele trecho com séries rápidas, ou fortalece recurso (RDI) se for falta de "combustível".</p></li>
       <li>Repetir até o filme inteiro rodar com tranquilidade e VoC alto na crença-alvo.</li>
       <li><strong>Versão com imprevistos (não pule esta):</strong>
-        <div class="fala">"Agora rode o filme de novo, mas com desafios: chove, a torcida vaia, o juiz erra, você começa perdendo… e se veja lidando com isso do seu jeito, com <span class="var">[CP]</span>… acompanhe."</div>
+        <div class="fala">"Agora rode o filme de novo, mas com desafios: chove, a torcida vaia, o juiz erra, você começa perdendo… e se veja lidando com isso do seu jeito, com <span class="var dynCP">[CP]</span>… acompanhe."</div>
         <p class="note">É a versão com imprevistos que gera confiança robusta — a vida real nunca roda o filme perfeito.</p></li>
     </ol>
   </div></details>
@@ -687,7 +696,7 @@ footer { text-align: center; font-size: 11.5px; color: var(--salvia); padding: 2
   <h1>Registro da sessão</h1>
   <div class="rule"></div>
   <div class="card soft">
-    <p class="note">⚠ LGPD: use identificação em código (ex.: iniciais), nunca nome completo. Nada é enviado a servidor — os dados existem só nesta página e somem ao fechar, a menos que você exporte.</p>
+    <p class="note">⚠ LGPD: use identificação em código (ex.: iniciais), nunca nome completo. Nada é enviado a servidor. Um rascunho fica salvo só neste navegador (para o caso de a página recarregar) e é apagado quando você toca em "Novo paciente".</p>
     <div class="field" style="margin-top:8px;"><label>Identificação (código)</label><input type="text" id="regId" placeholder="Ex.: paciente M.R. · 08/07/2026"></div>
   </div>
   <table class="log" id="logTable">
@@ -726,7 +735,7 @@ fill('palEmoNeg',EMONEG); fill('palEmoPos',EMOPOS); fill('palSens',SENS);
 /* chips fase 3 */
 function chips(id, arr, input){ const el=document.getElementById(id); if(!el) return;
   el.innerHTML = arr.map(x=>'<span class="chip">'+x+'</span>').join('');
-  el.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{ document.getElementById(input).value=c.textContent; el.querySelectorAll('.chip').forEach(o=>o.classList.remove('sel')); c.classList.add('sel'); });
+  el.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{ document.getElementById(input).value=c.textContent; document.getElementById(input).dispatchEvent(new Event('input')); el.querySelectorAll('.chip').forEach(o=>o.classList.remove('sel')); c.classList.add('sel'); });
 }
 chips('cnChips', [...CN1.slice(0,6),"Sou um fracasso (irei falhar)","Não estou no controle","Não estou seguro(a)","Não consigo ter sucesso"], 'f3cn');
 chips('cpChips', ["Consigo ter sucesso","Sou forte","Estou bem assim","Eu fiz o melhor que pude","Consigo dar conta","Acabou; estou seguro(a) agora","Consigo controlar o que está ao meu alcance","Sou digno(a) de ser amado(a)"], 'f3cp');
@@ -767,6 +776,24 @@ function logAdd(item, txt){ if(!txt) return alert('Nada para salvar.');
   logRows.push({t,item,txt});
   const tr=document.createElement('tr'); tr.innerHTML='<td>'+t+'</td><td>'+item+'</td><td>'+txt.replace(/</g,'&lt;')+'</td>';
   document.getElementById('logTable').appendChild(tr);
+  saveDraft();
+}
+function saveDraft(){
+  try{ localStorage.setItem('pb_draft', JSON.stringify({id:document.getElementById('regId').value, rows:logRows, suds:sudsHist, voc:vocHist})); }catch(e){}
+}
+function restoreDraft(){
+  try{
+    const d=JSON.parse(localStorage.getItem('pb_draft')||'null');
+    if(!d||!d.rows||!d.rows.length) return;
+    document.getElementById('regId').value=d.id||'';
+    d.rows.forEach(r=>{ logRows.push(r);
+      const tr=document.createElement('tr'); tr.innerHTML='<td>'+r.t+'</td><td>'+r.item+'</td><td>'+String(r.txt).replace(/</g,'&lt;')+'</td>';
+      document.getElementById('logTable').appendChild(tr); });
+    (d.suds||[]).forEach(v=>sudsHist.push(v));
+    (d.voc||[]).forEach(v=>vocHist.push(v));
+    if(sudsHist.length) document.getElementById('sudsCurve').textContent='Curva da sessão: '+sudsHist.join(' → ');
+    if(vocHist.length) document.getElementById('vocCurve').textContent='Curva da sessão: '+vocHist.join(' → ');
+  }catch(e){}
 }
 function salvarFase3(){
   const v=id=>document.getElementById(id).value||'—';
@@ -775,8 +802,13 @@ function salvarFase3(){
     ' | VoC: '+(scaleVals.voc3??'—')+' | Emoções: '+v('f3emo')+' | SUDS: '+(scaleVals.suds3??'—')+' | Corpo: '+v('f3corpo'));
   alert('Avaliação salva no registro.');
 }
-function logSuds4(){ if(scaleVals.suds4==null) return alert('Selecione o SUDS.'); logAdd('Fase 4 · SUDS','SUDS = '+scaleVals.suds4); }
-function logVoc5(){ if(scaleVals.voc5==null) return alert('Selecione o VoC.'); logAdd('Fase 5 · VoC','VoC = '+scaleVals.voc5); }
+const sudsHist=[], vocHist=[];
+function logSuds4(){ if(scaleVals.suds4==null) return alert('Selecione o SUDS.'); sudsHist.push(scaleVals.suds4);
+  document.getElementById('sudsCurve').textContent='Curva da sessão: '+sudsHist.join(' → ');
+  logAdd('Fase 4 · SUDS','SUDS = '+scaleVals.suds4); }
+function logVoc5(){ if(scaleVals.voc5==null) return alert('Selecione o VoC.'); vocHist.push(scaleVals.voc5);
+  document.getElementById('vocCurve').textContent='Curva da sessão: '+vocHist.join(' → ');
+  logAdd('Fase 5 · VoC','VoC = '+scaleVals.voc5); }
 function exportLog(){
   const id=document.getElementById('regId').value||'sessão';
   let txt='REGISTRO DE SESSÃO EMDR · '+id+'\nPamella Braz · Psicóloga · CRP 18/02439\n'+new Date().toLocaleString('pt-BR')+'\n\n';
@@ -818,6 +850,11 @@ function novoPaciente(){
   document.querySelectorAll('.chip.sel').forEach(c=>c.classList.remove('sel'));
   document.querySelectorAll('.bigsel').forEach(sp=>sp.textContent='–');
   for(const k in scaleVals) delete scaleVals[k];
+  sudsHist.length=0; vocHist.length=0;
+  document.getElementById('sudsCurve').textContent=''; document.getElementById('vocCurve').textContent='';
+  try{ localStorage.removeItem('pb_draft'); }catch(e){}
+  sessT0=Date.now();
+  refreshDyn();
   alert('Tudo limpo. Pronto para o próximo paciente.');
 }
 /* ============ anotações por etapa ============ */
@@ -853,6 +890,27 @@ else setTimeout(function(){document.getElementById('lockInput').focus();},200);
 function unlock(){ if(document.getElementById('lockInput').value.trim()==='emdr1'){ sessionStorage.setItem('pb_auth','1'); document.getElementById('lock').style.display='none'; }
   else document.getElementById('lockMsg').textContent='Senha incorreta.'; }
 document.getElementById('lockInput').addEventListener('keydown',function(e){ if(e.key==='Enter') unlock(); });
+
+/* ============ CN/CP dinamicas, timer e rascunho ============ */
+function refreshDyn(){
+  const cn=document.getElementById('f3cn').value.trim(), cp=document.getElementById('f3cp').value.trim();
+  document.querySelectorAll('.dynCN').forEach(el=>el.textContent=cn?('\u201c'+cn+'\u201d'):'[CN]');
+  document.querySelectorAll('.dynCP').forEach(el=>el.textContent=cp?('\u201c'+cp+'\u201d'):'[CP]');
+}
+['f3cn','f3cp'].forEach(id=>document.getElementById(id).addEventListener('input',refreshDyn));
+refreshDyn();
+
+let sessT0=Date.now();
+const clockEl=document.getElementById('clock');
+clockEl.onclick=()=>{ if(confirm('Zerar o timer da sess\u00e3o?')) sessT0=Date.now(); };
+setInterval(()=>{
+  const m=Math.floor((Date.now()-sessT0)/60000), sec=Math.floor((Date.now()-sessT0)/1000)%60;
+  clockEl.textContent=String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0');
+  clockEl.style.color = m>=45 ? '#d88b6b' : (m>=35 ? '#f0d9a8' : 'var(--areia)');
+},1000);
+
+document.getElementById('regId').addEventListener('input',saveDraft);
+restoreDraft();
 </script>
 </body>
 </html>
