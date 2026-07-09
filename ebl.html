@@ -37,6 +37,8 @@ body {
 .homecard p { font-size: 13px; color: rgba(235,230,220,.65); margin-top: 6px; font-weight: 300; }
 .tlink { display: block; text-align: center; margin-top: 28px; font-size: 12px; color: rgba(235,230,220,.45); cursor: pointer; letter-spacing: 1px; }
 .tlink:hover { color: var(--areia); }
+.backlink { display: inline-block; font-size: 12.5px; color: rgba(235,230,220,.55); cursor: pointer; letter-spacing: 1px; padding: 4px 10px; border: 1px solid rgba(216,201,163,.25); border-radius: 16px; margin-bottom: 6px; }
+.backlink:hover { color: var(--areia); border-color: var(--areia); }
 
 /* inputs / buttons */
 .codebox { display: flex; gap: 10px; justify-content: center; margin: 22px 0; }
@@ -111,7 +113,8 @@ footer { text-align: center; font-size: 10.5px; color: rgba(235,230,220,.35); pa
 
 <!-- ===== PACIENTE: CÓDIGO ===== -->
 <div class="view" id="v-code">
-  <p class="msg" style="margin-top:26px;">Digite o código que você recebeu:</p>
+  <span class="backlink" onclick="goHome()">← voltar</span>
+  <p class="msg" style="margin-top:14px;">Digite o código que você recebeu:</p>
   <div class="codebox">
     <input class="code" id="codeInput" maxlength="4" placeholder="····" autocomplete="off">
   </div>
@@ -139,7 +142,8 @@ footer { text-align: center; font-size: 10.5px; color: rgba(235,230,220,.35); pa
 
 <!-- ===== SOLO ===== -->
 <div class="view" id="v-solo">
-  <p class="msg" style="margin-top:8px;">Use apenas como combinado com a sua psicóloga — para praticar o lugar calmo, o abraço da borboleta e a respiração.</p>
+  <span class="backlink" onclick="goHome()">← voltar</span>
+  <p class="msg" style="margin-top:6px;">Use apenas como combinado com a sua psicóloga — para praticar o lugar calmo, o abraço da borboleta e a respiração.</p>
   <div class="center" style="margin-top:14px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
     <button class="btn small ghost" onclick="soloPreset(0.35, 6, 'tap')">Borboleta lenta · 6</button>
     <button class="btn small ghost" onclick="soloPreset(0.4, 8, 'visual')">Lugar calmo · 8</button>
@@ -154,6 +158,7 @@ footer { text-align: center; font-size: 10.5px; color: rgba(235,230,220,.35); pa
 
 <!-- ===== TERAPEUTA ===== -->
 <div class="view" id="v-thera">
+  <span class="backlink" onclick="goHome()">← voltar</span>
   <div class="sessioninfo">
     <div style="font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--salvia);">Código desta sessão</div>
     <div class="code" id="tCode">····</div>
@@ -223,6 +228,7 @@ footer { text-align: center; font-size: 10.5px; color: rgba(235,230,220,.35); pa
 
 <script>
 /* ================= views ================= */
+function goHome(){ try{ engineStop(); }catch(e){} show('v-home'); }
 function show(id){ document.querySelectorAll('.view').forEach(v=>v.classList.remove('active')); document.getElementById(id).classList.add('active'); }
 
 /* ================= engine (roda no palco local) ================= */
