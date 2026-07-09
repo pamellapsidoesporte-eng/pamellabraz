@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EBL · Pamella Braz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@0,300;0,400;0,600&family=Inter:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<style>
+:root {
+  --fundo1: #0e1a13; --fundo2: #1f2820; --verde: #3a4a3d; --salvia: #6a7d6d;
+  --areia: #d8c9a3; --bruma: #ebe6dc; --branco: #ffffff;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  font-family: 'Inter', sans-serif; color: var(--bruma);
+  background: radial-gradient(ellipse at 30% 20%, #24322a 0%, var(--fundo2) 45%, var(--fundo1) 100%);
+  min-height: 100vh; overflow-x: hidden;
+}
+.veil { position: fixed; inset: 0; pointer-events: none; background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.35) 100%); }
+.wrap { position: relative; max-width: 980px; margin: 0 auto; padding: 26px 22px 60px 22px; min-height: 100vh; }
+.brand { text-align: center; margin: 18px 0 6px 0; }
+.brand h1 { font-family: 'Cormorant Garamond', serif; font-weight: 600; font-size: 34px; letter-spacing: 1px; color: var(--bruma); }
+.brand .sub { font-size: 10.5px; letter-spacing: 4px; text-transform: uppercase; color: var(--areia); font-weight: 600; margin-top: 4px; }
+.rule { width: 46px; height: 1.5px; background: var(--areia); margin: 18px auto; opacity: .7; }
+.view { display: none; }
+.view.active { display: block; animation: fade .5s ease; }
+@keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+/* home */
+.homecards { display: grid; grid-template-columns: 1fr; gap: 16px; max-width: 460px; margin: 30px auto; }
+.homecard { background: rgba(235,230,220,.05); border: 1px solid rgba(216,201,163,.3); border-radius: 16px; padding: 26px 28px; cursor: pointer; text-align: center; transition: all .25s; }
+.homecard:hover { border-color: var(--areia); background: rgba(235,230,220,.09); transform: translateY(-2px); }
+.homecard h2 { font-family: 'Cormorant Garamond', serif; font-weight: 600; font-size: 24px; color: var(--bruma); }
+.homecard p { font-size: 13px; color: rgba(235,230,220,.65); margin-top: 6px; font-weight: 300; }
+.tlink { display: block; text-align: center; margin-top: 28px; font-size: 12px; color: rgba(235,230,220,.45); cursor: pointer; letter-spacing: 1px; }
+.tlink:hover { color: var(--areia); }
+.backlink { display: inline-block; font-size: 12.5px; color: rgba(235,230,220,.55); cursor: pointer; letter-spacing: 1px; padding: 4px 10px; border: 1px solid rgba(216,201,163,.25); border-radius: 16px; margin-bottom: 6px; }
+.backlink:hover { color: var(--areia); border-color: var(--areia); }
+
+/* inputs / buttons */
+.codebox { display: flex; gap: 10px; justify-content: center; margin: 22px 0; }
+input.code { width: 220px; text-align: center; font-size: 28px; letter-spacing: 10px; text-transform: uppercase; padding: 12px; border-radius: 12px; border: 1px solid rgba(216,201,163,.4); background: rgba(0,0,0,.25); color: var(--areia); font-family: 'Inter', sans-serif; outline: none; }
+input.code:focus { border-color: var(--areia); }
+.btn { background: var(--areia); color: var(--fundo2); border: none; border-radius: 10px; padding: 13px 26px; font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 600; cursor: pointer; letter-spacing: .5px; }
+.btn:hover { filter: brightness(1.08); }
+.btn.ghost { background: transparent; color: var(--areia); border: 1.5px solid rgba(216,201,163,.5); }
+.btn.small { padding: 8px 14px; font-size: 12.5px; }
+.center { text-align: center; }
+.msg { text-align: center; font-size: 14px; color: rgba(235,230,220,.7); font-weight: 300; min-height: 22px; }
+
+/* stage */
+#stage { position: relative; background: rgba(0,0,0,.32); border: 1px solid rgba(216,201,163,.18); border-radius: 18px; height: 64vh; min-height: 340px; overflow: hidden; margin-top: 18px; }
+#stage:fullscreen { border-radius: 0; border: none; background: var(--fundo1); }
+#dot { position: absolute; top: 50%; left: 50%; width: 70px; height: 70px; border-radius: 50%; background: var(--areia); transform: translate(-50%,-50%); box-shadow: 0 0 60px rgba(216,201,163,.5), 0 0 120px rgba(216,201,163,.18); }
+#tapzone { position: absolute; inset: 0; display: none; align-items: center; justify-content: space-between; padding: 0 12%; }
+.tapcircle { width: 140px; height: 140px; border-radius: 50%; border: 2px solid rgba(216,201,163,.35); display: flex; align-items: center; justify-content: center; font-size: 14px; letter-spacing: 3px; color: rgba(235,230,220,.55); transition: all .1s; }
+.tapcircle.on { background: var(--areia); color: var(--fundo2); box-shadow: 0 0 70px rgba(216,201,163,.55); }
+#breath { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 26px; }
+#breathCircle { width: 110px; height: 110px; border-radius: 50%; border: 1.5px solid rgba(216,201,163,.5); animation: breathe 8s ease-in-out infinite; }
+@keyframes breathe { 0%,100% { transform: scale(1); opacity: .5; } 50% { transform: scale(1.45); opacity: 1; } }
+#breathTxt { font-size: 14px; letter-spacing: 2px; color: rgba(235,230,220,.6); font-weight: 300; text-align: center; padding: 0 30px; }
+#stCounter { position: absolute; top: 14px; right: 18px; font-size: 12px; color: rgba(235,230,220,.4); letter-spacing: 1.5px; font-variant-numeric: tabular-nums; }
+#fsBtn { position: absolute; bottom: 12px; right: 14px; background: rgba(235,230,220,.1); color: rgba(235,230,220,.7); border: none; border-radius: 8px; padding: 7px 13px; font-size: 12px; cursor: pointer; z-index: 5; }
+#audioOverlay { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(14,26,19,.85); z-index: 6; cursor: pointer; font-size: 16px; letter-spacing: 1px; color: var(--areia); text-align: center; padding: 30px; }
+
+/* therapist console */
+.console { background: rgba(235,230,220,.05); border: 1px solid rgba(216,201,163,.25); border-radius: 16px; padding: 20px 22px; margin-top: 18px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px 24px; align-items: end; }
+.ctl label { display: block; font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--salvia); margin-bottom: 6px; }
+.ctl input[type=range] { width: 100%; accent-color: var(--areia); }
+.ctl select { width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(216,201,163,.35); background: var(--fundo2); color: var(--bruma); font-family: 'Inter', sans-serif; font-size: 14px; }
+.ctl .val { font-size: 12px; color: rgba(235,230,220,.55); }
+.chks { display: flex; gap: 14px; flex-wrap: wrap; }
+.chks label { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--bruma); text-transform: none; letter-spacing: 0; cursor: pointer; font-weight: 400; }
+.chks input { accent-color: var(--areia); width: 15px; height: 15px; }
+.swatches { display: flex; gap: 8px; }
+.sw { width: 26px; height: 26px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
+.sw.sel { border-color: var(--bruma); }
+.sessioninfo { background: rgba(216,201,163,.1); border: 1px dashed rgba(216,201,163,.5); border-radius: 14px; padding: 16px 20px; margin-top: 18px; text-align: center; }
+.sessioninfo .code { font-size: 34px; letter-spacing: 12px; color: var(--areia); font-weight: 600; margin: 6px 0; }
+.sessioninfo .lnk { font-size: 12px; color: rgba(235,230,220,.6); word-break: break-all; }
+.statusdot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: #b0693f; margin-right: 6px; }
+.statusdot.on { background: #7da77d; }
+.plists details.pd { background: rgba(235,230,220,.05); border: 1px solid rgba(216,201,163,.25); border-radius: 12px; margin: 8px 0; }
+.plists summary { padding: 12px 16px; cursor: pointer; color: var(--areia); font-weight: 600; font-size: 14px; letter-spacing: 1px; list-style: none; }
+.plists details[open] summary { border-bottom: 1px solid rgba(216,201,163,.15); }
+.plists .pin { padding: 10px 18px 14px 18px; font-size: 14px; line-height: 1.75; color: rgba(235,230,220,.85); }
+.plists .pin strong { color: var(--areia); font-weight: 600; }
+footer { text-align: center; font-size: 10.5px; color: rgba(235,230,220,.35); padding: 22px; letter-spacing: 1px; }
+</style>
+</head>
+<body>
+<div class="veil"></div>
+<div class="wrap">
+
+<div class="brand">
+  <h1>Pamella Braz</h1>
+  <div class="sub">Psicóloga Clínica e do Esporte · EMDR</div>
+</div>
+<div class="rule"></div>
+
+<!-- ===== HOME ===== -->
+<div class="view active" id="v-home">
+  <div class="homecards">
+    <div class="homecard" onclick="show('v-code')">
+      <h2>Tenho um código de sessão</h2>
+      <p>Sua psicóloga te enviou um código. A estimulação será conduzida por ela, ao vivo.</p>
+    </div>
+    <div class="homecard" onclick="show('v-solo'); soloSetup();">
+      <h2>Prática guiada</h2>
+      <p>Exercícios de regulação combinados em sessão — lugar calmo, abraço da borboleta.</p>
+    </div>
+  </div>
+  <div class="tlink" onclick="requestThera()">área da terapeuta</div>
+</div>
+
+<!-- ===== PACIENTE: CÓDIGO ===== -->
+<div class="view" id="v-code">
+  <span class="backlink" onclick="goHome()">← voltar</span>
+  <p class="msg" style="margin-top:14px;">Digite o código que você recebeu:</p>
+  <div class="codebox">
+    <input class="code" id="codeInput" maxlength="4" placeholder="····" autocomplete="off">
+  </div>
+  <div class="center">
+    <button class="btn" onclick="patientConnect()">Entrar na sessão</button>
+    <p class="msg" id="pMsg" style="margin-top:14px;"></p>
+  </div>
+</div>
+
+<!-- ===== PACIENTE: SESSÃO ===== -->
+<div class="view" id="v-patient">
+  <span class="backlink" onclick="patientLeave()">&#8592; voltar</span>
+  <p class="msg"><span class="statusdot" id="pDot"></span><span id="pStatus">Conectando…</span></p>
+  <div id="stage">
+    <div id="breath">
+      <div id="breathCircle"></div>
+      <div id="breathTxt">Respire com o círculo enquanto aguarda.<br>Sua psicóloga vai conduzir tudo daqui a pouco.</div>
+    </div>
+    <div id="dot" style="display:none;"></div>
+    <div id="tapzone"><div class="tapcircle" id="tapL">ESQ.</div><div class="tapcircle" id="tapR">DIR.</div></div>
+    <div id="stCounter"></div>
+    <div id="audioOverlay">🔈 Toque aqui uma vez para ativar o som da sessão</div>
+    <button id="fsBtn">⛶ tela cheia</button>
+  </div>
+
+  <div class="plists">
+    <p class="msg" style="margin-top:26px; letter-spacing:1px;">Listas de apoio &mdash; abra quando a sua psic&oacute;loga pedir</p>
+    <details class="pd"><summary>Pensamentos negativos (cogni&ccedil;&otilde;es)</summary><div class="pin">
+      <strong>Sobre mim:</strong> Eu n&atilde;o mere&ccedil;o o amor &middot; Sou uma m&aacute; pessoa &middot; Sou terr&iacute;vel &middot; Sou in&uacute;til (inadequado(a)) &middot; Sou vergonhoso(a) &middot; N&atilde;o sou capaz de ser amado(a) &middot; N&atilde;o sou bom (boa) o suficiente &middot; Mere&ccedil;o apenas coisas ruins &middot; Sou constantemente prejudicado(a) &middot; Sou feio(a) &middot; Sou burro(a) &middot; Sou insignificante &middot; Sou uma decep&ccedil;&atilde;o &middot; Eu mere&ccedil;o morrer &middot; Eu mere&ccedil;o ser miser&aacute;vel &middot; Eu sou diferente (n&atilde;o me encaixo)<br><br>
+      <strong>Sobre o que fiz:</strong> Eu deveria ter feito algo &middot; Eu fiz algo errado &middot; Eu deveria ter percebido<br><br>
+      <strong>Seguran&ccedil;a:</strong> N&atilde;o consigo confiar em ningu&eacute;m &middot; N&atilde;o sou capaz de me proteger &middot; Estou em perigo &middot; N&atilde;o estou seguro(a) &middot; N&atilde;o &eacute; seguro sentir as minhas emo&ccedil;&otilde;es<br><br>
+      <strong>Controle:</strong> N&atilde;o estou no controle &middot; Sou impotente &middot; Sou fraco(a) &middot; N&atilde;o consigo obter o que desejo &middot; N&atilde;o consigo me defender &middot; N&atilde;o consigo desabafar &middot; N&atilde;o sou digno(a) de confian&ccedil;a &middot; N&atilde;o consigo confiar em mim mesmo(a) &middot; Sou um fracasso &middot; N&atilde;o consigo ter sucesso &middot; Preciso ser perfeito(a) &middot; N&atilde;o consigo suportar &middot; Sou inadequado(a)
+    </div></details>
+    <details class="pd"><summary>Pensamentos positivos (cogni&ccedil;&otilde;es)</summary><div class="pin">
+      <strong>Sobre mim:</strong> Eu mere&ccedil;o o amor; sou digno(a) de ser amado(a) &middot; Sou uma pessoa boa &middot; Estou bem assim &middot; Eu tenho m&eacute;rito &middot; Eu posso ser amado(a) &middot; Eu mere&ccedil;o coisas boas &middot; Eu sou (posso ser) saud&aacute;vel &middot; Tenho boa apar&ecirc;ncia &middot; Sou inteligente &middot; Sou significante (tenho import&acirc;ncia) &middot; Sinto-me bem do jeito que sou &middot; Eu mere&ccedil;o viver &middot; Eu mere&ccedil;o ser feliz<br><br>
+      <strong>Sobre o que fiz:</strong> Eu fiz o melhor que pude &middot; Eu aprendi (posso aprender) com isso<br><br>
+      <strong>Seguran&ccedil;a:</strong> Posso escolher em quem confiar &middot; Posso (aprender a) cuidar de mim &middot; Acabou; estou seguro(a) agora &middot; Posso sentir as minhas emo&ccedil;&otilde;es com seguran&ccedil;a<br><br>
+      <strong>Controle:</strong> Consigo controlar o que est&aacute; ao meu alcance &middot; Agora possuo escolhas &middot; Sou forte &middot; Consigo obter o que desejo &middot; Consigo expor as minhas necessidades &middot; Sou confi&aacute;vel &middot; Posso confiar em mim &middot; Posso confiar no meu bom-senso &middot; Consigo ter sucesso &middot; Posso ser eu mesmo(a) &middot; Consigo dar conta &middot; Sou adequado(a)
+    </div></details>
+    <details class="pd"><summary>Emo&ccedil;&otilde;es</summary><div class="pin">
+      <strong>Desagrad&aacute;veis:</strong> Tristeza &middot; Pavor &middot; Culpa &middot; Vergonha &middot; Inveja &middot; Desprezo &middot; Nostalgia &middot; Medo &middot; Humilha&ccedil;&atilde;o &middot; Pesar &middot; Raiva &middot; Apatia &middot; Melancolia &middot; Covardia &middot; Ansiedade &middot; Desespero &middot; Remorso &middot; Nojo &middot; Depress&atilde;o &middot; Ofensa &middot; Ang&uacute;stia &middot; P&acirc;nico &middot; Solid&atilde;o &middot; Temor &middot; Dor &middot; T&eacute;dio<br><br>
+      <strong>Agrad&aacute;veis:</strong> Alegria &middot; Prazer &middot; Paz &middot; Entusiasmo &middot; Paix&atilde;o &middot; Motiva&ccedil;&atilde;o &middot; Gratid&atilde;o &middot; Al&iacute;vio &middot; Esperan&ccedil;a &middot; Satisfa&ccedil;&atilde;o &middot; Euforia &middot; Desabafo &middot; Orgulho &middot; Felicidade &middot; Tranquilidade &middot; Consolo &middot; Anima&ccedil;&atilde;o &middot; Enfrentamento &middot; Bondade &middot; Calma &middot; Serenidade &middot; Harmonia &middot; Sossego &middot; Sensibilidade &middot; Generosidade
+    </div></details>
+    <details class="pd"><summary>Sensa&ccedil;&otilde;es no corpo</summary><div class="pin">
+      Aperto no peito &middot; Borboleta na barriga &middot; Cabe&ccedil;a rodando &middot; Dor na barriga &middot; Meu corpo n&atilde;o para &middot; Cabe&ccedil;a bagun&ccedil;ada &middot; Ouvido tampado &middot; Pesco&ccedil;o doendo &middot; Press&atilde;o no pesco&ccedil;o &middot; Aperto no est&ocirc;mago &middot; N&oacute; na garganta &middot; Cabe&ccedil;a atrapalhada &middot; Cora&ccedil;&atilde;o acelerado &middot; Dor de barriga &middot; Press&atilde;o na cabe&ccedil;a &middot; Falta de ar &middot; &Acirc;nsia de v&ocirc;mito &middot; Cora&ccedil;&atilde;o saindo pela boca &middot; Vontade de vomitar &middot; Mexido(a) por dentro &middot; N&atilde;o consigo respirar &middot; N&oacute; no est&ocirc;mago &middot; Sensa&ccedil;&atilde;o ruim no peito &middot; Press&atilde;o no peito &middot; Zumbido na cabe&ccedil;a &middot; Bra&ccedil;o dormente
+    </div></details>
+  </div>
+</div>
+
+
+
+<!-- ===== SOLO ===== -->
+<div class="view" id="v-solo">
+  <span class="backlink" onclick="goHome()">← voltar</span>
+  <p class="msg" style="margin-top:6px;">Use apenas como combinado com a sua psicóloga — para praticar o lugar calmo, o abraço da borboleta e a respiração.</p>
+  <div class="center" style="margin-top:14px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+    <button class="btn small ghost" onclick="soloPreset(0.35, 6, 'tap')">Borboleta lenta · 6</button>
+    <button class="btn small ghost" onclick="soloPreset(0.4, 8, 'visual')">Lugar calmo · 8</button>
+    <button class="btn small ghost" onclick="soloPreset(0.3, 0, 'visual')">Respiração contínua</button>
+  </div>
+  <div id="soloStageHolder"></div>
+  <div class="center" style="margin-top:16px;">
+    <button class="btn" id="soloStart" onclick="soloToggle()">▶ Iniciar</button>
+    <button class="btn ghost" onclick="engineStop(); soloBtnReset();" style="margin-left:8px;">■ Parar</button>
+  </div>
+</div>
+
+<!-- ===== SENHA ===== -->
+<div class="view" id="v-senha">
+  <span class="backlink" onclick="goHome()">&#8592; voltar</span>
+  <p class="msg" style="margin-top:20px;">&Aacute;rea restrita &mdash; digite a senha:</p>
+  <div class="codebox">
+    <input class="code" type="password" id="senhaInput" style="letter-spacing:6px; font-size:22px;" autocomplete="off">
+  </div>
+  <div class="center">
+    <button class="btn" onclick="checkSenha()">Entrar</button>
+    <p class="msg" id="senhaMsg" style="margin-top:12px;"></p>
+  </div>
+</div>
+
+<!-- ===== TERAPEUTA ===== -->
+<div class="view" id="v-thera">
+  <span class="backlink" onclick="goHome()">← voltar</span>
+  <div class="sessioninfo">
+    <div style="font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--salvia);">Código desta sessão</div>
+    <div class="code" id="tCode">····</div>
+    <div class="lnk" id="tLink"></div>
+    <div style="margin-top:10px;">
+      <button class="btn small" onclick="copyLink()">⧉ Copiar convite</button>
+      <span style="margin-left:14px; font-size:13px;"><span class="statusdot" id="tDot"></span><span id="tStatus">aguardando paciente…</span></span>
+    </div>
+  </div>
+
+  <div class="console">
+    <div class="ctl" style="grid-column:1/-1;">
+      <label>Modalidades</label>
+      <div class="chks">
+        <label><input type="checkbox" id="cVisual" checked> Visual (bolinha)</label>
+        <label><input type="checkbox" id="cAudio"> Som alternado (paciente de fone)</label>
+        <label><input type="checkbox" id="cTap"> Guia de tapping / borboleta</label>
+      </div>
+    </div>
+    <div class="ctl">
+      <label>Velocidade <span class="val" id="tSpd">0.8 mov/s</span></label>
+      <input type="range" id="cSpeed" min="0.2" max="2" step="0.05" value="0.8">
+    </div>
+    <div class="ctl">
+      <label>Movimentos por série</label>
+      <select id="cSeries">
+        <option value="4">4 · recurso</option><option value="6">6 · recurso</option><option value="8">8 · recurso</option>
+        <option value="12">12 · EMD / adolescente</option><option value="20">20 · adolescente</option>
+        <option value="24" selected>24 · reprocessamento</option><option value="30">30</option>
+        <option value="36">36</option><option value="48">48</option><option value="0">contínuo</option>
+      </select>
+    </div>
+    <div class="ctl">
+      <label>Tamanho <span class="val" id="tSize">70px</span></label>
+      <input type="range" id="cSize" min="26" max="150" step="2" value="70">
+    </div>
+    <div class="ctl">
+      <label>Cor</label>
+      <div class="swatches">
+        <div class="sw sel" data-c="#d8c9a3" style="background:#d8c9a3"></div>
+        <div class="sw" data-c="#ffffff" style="background:#fff"></div>
+        <div class="sw" data-c="#8fae93" style="background:#8fae93"></div>
+        <div class="sw" data-c="#7da7c4" style="background:#7da7c4"></div>
+        <div class="sw" data-c="#c48b7d" style="background:#c48b7d"></div>
+      </div>
+    </div>
+    <div class="ctl">
+      <label>Volume <span class="val" id="tVol">50%</span></label>
+      <input type="range" id="cVol" min="0" max="100" step="5" value="50">
+    </div>
+    <div class="ctl">
+      <label>Fim de série</label>
+      <div class="chks"><label><input type="checkbox" id="cChime" checked> Sino suave</label></div>
+    </div>
+    <div class="ctl" style="grid-column:1/-1; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+      <button class="btn" id="tStart" onclick="theraStart()">▶ Iniciar série</button>
+      <button class="btn ghost" onclick="theraStop()">■ Parar</button>
+      <span class="val" id="tInfo"></span>
+    </div>
+  </div>
+  <p class="msg" style="margin-top:12px; font-size:12px;">A tela abaixo espelha o que o paciente vê:</p>
+  <div id="theraStageHolder"></div>
+</div>
+
+</div>
+<footer>uso clínico · conduzido por profissional habilitada em EMDR · CRP 18/02439</footer>
+
+<script>
+/* ================= views ================= */
+function patientLeave(){ try{ if(conn&&conn.open) conn.close(); }catch(e){} try{ engineStop(); }catch(e){} show('v-home'); }
+function goHome(){ try{ engineStop(); }catch(e){} show('v-home'); }
+function show(id){ document.querySelectorAll('.view').forEach(v=>v.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+
+/* ================= engine (roda no palco local) ================= */
+const stage=document.getElementById('stage'), dot=document.getElementById('dot'),
+      tapzone=document.getElementById('tapzone'), tapL=document.getElementById('tapL'), tapR=document.getElementById('tapR'),
+      breath=document.getElementById('breath'), stCounter=document.getElementById('stCounter');
+let cfg={visual:true,audio:false,tap:false,speed:0.8,series:24,size:70,color:'#d8c9a3',vol:50,chime:true};
+let running=false, raf=null, t0=0, phase0=0, moves=0, serie=1, lastSide=null, audioCtx=null;
+let onSeriesEnd=null, onCount=null;
+
+function applyCfg(){
+  dot.style.width=dot.style.height=cfg.size+'px';
+  dot.style.background=cfg.color;
+  dot.style.boxShadow='0 0 60px '+cfg.color+'80, 0 0 120px '+cfg.color+'30';
+  dot.style.display=cfg.visual&&running?'block':(cfg.visual?dot.style.display:'none');
+  tapzone.style.display=cfg.tap?'flex':'none';
+}
+function beep(pan,freq,dur){
+  try{
+    if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    if(audioCtx.state==='suspended'){ document.getElementById('audioOverlay').style.display='flex'; return; }
+    const o=audioCtx.createOscillator(), g=audioCtx.createGain(), p=audioCtx.createStereoPanner();
+    o.frequency.value=freq||460; p.pan.value=pan; g.gain.value=(cfg.vol/100)*0.5;
+    o.connect(g); g.connect(p); p.connect(audioCtx.destination);
+    o.start(); g.gain.exponentialRampToValueAtTime(0.0001,audioCtx.currentTime+(dur||0.07)); o.stop(audioCtx.currentTime+(dur||0.08));
+  }catch(e){}
+}
+document.getElementById('audioOverlay').onclick=function(){
+  if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+  audioCtx.resume(); this.style.display='none';
+};
+function chime(){ beep(0,660,0.4); setTimeout(()=>beep(0,880,0.5),180); }
+function frame(ts){
+  if(!running) return;
+  const phase=phase0+(ts-t0)/1000*cfg.speed;
+  const x=0.5-0.5*Math.cos(phase*2*Math.PI);
+  const pad=cfg.size/2+18, w=stage.clientWidth-2*pad;
+  if(cfg.visual) dot.style.left=(pad+x*w)+'px';
+  const side=x>0.5?'R':'L';
+  if(side!==lastSide){
+    if(lastSide!==null){
+      if(cfg.audio) beep(side==='R'?1:-1,460);
+      if(cfg.tap){ tapL.classList.toggle('on',side==='L'); tapR.classList.toggle('on',side==='R'); if(!cfg.audio) beep(side==='R'?0.5:-0.5,300,0.04); }
+    }
+    lastSide=side;
+  }
+  const nm=Math.floor(phase);
+  if(nm!==moves){ moves=nm; stCounter.textContent='série '+serie+' · '+moves+(cfg.series?' / '+cfg.series:'');
+    if(onCount) onCount(moves,serie);
+    if(cfg.series&&moves>=cfg.series){ engineEndSeries(); return; } }
+  raf=requestAnimationFrame(frame);
+}
+function engineStart(){
+  breath.style.display='none';
+  document.getElementById('audioOverlay').style.display='none';
+  if(cfg.audio&&(!audioCtx||audioCtx.state==='suspended')){
+    if(!audioCtx){ try{ audioCtx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} }
+    if(audioCtx&&audioCtx.state==='suspended') document.getElementById('audioOverlay').style.display='flex';
+  }
+  running=true; t0=performance.now(); phase0=0; moves=0; lastSide=null;
+  applyCfg(); if(cfg.visual) dot.style.display='block';
+  raf=requestAnimationFrame(frame);
+}
+function engineEndSeries(){
+  running=false; cancelAnimationFrame(raf);
+  if(cfg.chime) chime();
+  dot.style.left='50%'; tapL.classList.remove('on'); tapR.classList.remove('on');
+  if(onSeriesEnd) onSeriesEnd(serie,moves);
+  serie++;
+}
+function engineStop(){
+  running=false; cancelAnimationFrame(raf);
+  moves=0; serie=1; lastSide=null;
+  dot.style.left='50%'; dot.style.display='none';
+  tapL.classList.remove('on'); tapR.classList.remove('on');
+  stCounter.textContent=''; breath.style.display='flex';
+}
+document.getElementById('fsBtn').onclick=()=>{ if(document.fullscreenElement) document.exitFullscreen(); else stage.requestFullscreen().catch(()=>{}); };
+
+/* palco é único: movido para a view ativa */
+function moveStageTo(holderId){ document.getElementById(holderId).appendChild(stage); }
+
+/* ================= PACIENTE ================= */
+let peer=null, conn=null;
+function handleHash(){
+  const hashRaw=(location.hash||'').replace('#','').trim();
+  if(hashRaw.toLowerCase()==='terapeuta'){ requestThera(); }
+  else { const codeFromHash=hashRaw.toUpperCase();
+    if(codeFromHash.length===4){ show('v-code'); document.getElementById('codeInput').value=codeFromHash; } }
+}
+window.addEventListener('DOMContentLoaded', handleHash);
+window.addEventListener('hashchange', handleHash);
+
+function patientConnect(){
+  const code=document.getElementById('codeInput').value.trim().toUpperCase();
+  const m=document.getElementById('pMsg');
+  if(code.length!==4){ m.textContent='O código tem 4 caracteres.'; return; }
+  if(typeof Peer==='undefined'){ m.textContent='Sem conexão com a internet. Verifique e tente de novo.'; return; }
+  m.textContent='Conectando…';
+  peer=new Peer();
+  peer.on('open',()=>{
+    conn=peer.connect('pbraz-ebl-'+code,{reliable:true});
+    conn.on('open',()=>{
+      show('v-patient'); moveStageTo('v-patient')||0;
+      document.getElementById('v-patient').insertBefore(stage, document.getElementById('v-patient').children[1]);
+      document.getElementById('pDot').classList.add('on');
+      document.getElementById('pStatus').textContent='Conectado. Aguarde a condução da sua psicóloga.';
+      conn.send({t:'hi'});
+      conn.on('data',d=>{
+        if(d.t==='cfg'){ cfg=Object.assign(cfg,d.cfg); applyCfg(); }
+        if(d.t==='start') engineStart();
+        if(d.t==='stop') engineStop();
+      });
+      onSeriesEnd=(s,n)=>{ conn.send({t:'done',serie:s,moves:n}); };
+      onCount=(n,s)=>{ if(n%4===0) conn.send({t:'count',n,serie:s}); };
+      conn.on('close',()=>{ document.getElementById('pDot').classList.remove('on');
+        document.getElementById('pStatus').textContent='Sessão encerrada.'; engineStop(); });
+    });
+    setTimeout(()=>{ if(!conn||!conn.open){ m.textContent='Não encontrei essa sessão. Confira o código com a sua psicóloga.'; } },6000);
+  });
+  peer.on('error',()=>{ m.textContent='Não foi possível conectar. Confira o código e a internet.'; });
+}
+
+/* ================= TERAPEUTA ================= */
+let tConn=null, tPeer=null, tRunning=false;
+function makeCode(){ const s='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let c=''; for(let i=0;i<4;i++) c+=s[Math.floor(Math.random()*s.length)]; return c; }
+function requestThera(){
+  if(sessionStorage.getItem('pb_auth')==='1'){ show('v-thera'); theraSetup(); return; }
+  show('v-senha');
+  setTimeout(()=>{ const i=document.getElementById('senhaInput'); if(i) i.focus(); },200);
+}
+function checkSenha(){
+  const v=document.getElementById('senhaInput').value.trim();
+  if(v==='emdr1'){ sessionStorage.setItem('pb_auth','1'); document.getElementById('senhaInput').value='';
+    document.getElementById('senhaMsg').textContent=''; show('v-thera'); theraSetup(); }
+  else { document.getElementById('senhaMsg').textContent='Senha incorreta.'; }
+}
+document.addEventListener('keydown',e=>{ if(e.key==='Enter'&&document.getElementById('v-senha').classList.contains('active')) checkSenha(); });
+function theraSetup(){
+  moveStageTo('theraStageHolder');
+  if(tPeer) return;
+  const code=makeCode();
+  document.getElementById('tCode').textContent=code.split('').join(' ');
+  const isWeb=location.protocol.startsWith('http');
+  const link=isWeb?(location.origin+'/paciente/#'+code):null;
+  document.getElementById('tLink').textContent=link?link:'Envie o arquivo deste site ao paciente junto com o código acima.';
+  window._tCode=code; window._tLink=link;
+  if(typeof Peer==='undefined'){ document.getElementById('tStatus').textContent='sem internet — modo local apenas'; return; }
+  tPeer=new Peer('pbraz-ebl-'+code);
+  tPeer.on('connection',c=>{
+    tConn=c;
+    c.on('data',d=>{
+      if(d.t==='hi'){ document.getElementById('tDot').classList.add('on');
+        document.getElementById('tStatus').textContent='paciente conectado ✓'; sendCfg(); }
+      if(d.t==='count') document.getElementById('tInfo').textContent='paciente: série '+d.serie+' · '+d.n+' mov.';
+      if(d.t==='done'){ document.getElementById('tInfo').textContent='✔ paciente concluiu a série '+d.serie+' ('+d.moves+' mov.) — "O que você percebe agora?"'; }
+    });
+    c.on('close',()=>{ document.getElementById('tDot').classList.remove('on');
+      document.getElementById('tStatus').textContent='paciente desconectou'; });
+  });
+}
+function readCfg(){
+  cfg.visual=document.getElementById('cVisual').checked;
+  cfg.audio=document.getElementById('cAudio').checked;
+  cfg.tap=document.getElementById('cTap').checked;
+  cfg.speed=+document.getElementById('cSpeed').value;
+  cfg.series=+document.getElementById('cSeries').value;
+  cfg.size=+document.getElementById('cSize').value;
+  cfg.vol=+document.getElementById('cVol').value;
+  cfg.chime=document.getElementById('cChime').checked;
+  applyCfg();
+}
+function sendCfg(){ readCfg(); if(tConn&&tConn.open) tConn.send({t:'cfg',cfg}); }
+['cVisual','cAudio','cTap','cSpeed','cSeries','cSize','cVol','cChime'].forEach(id=>{
+  document.getElementById(id).addEventListener('input',()=>{
+    document.getElementById('tSpd').textContent=(+document.getElementById('cSpeed').value).toFixed(2)+' mov/s';
+    document.getElementById('tSize').textContent=document.getElementById('cSize').value+'px';
+    document.getElementById('tVol').textContent=document.getElementById('cVol').value+'%';
+    sendCfg(); });
+});
+document.querySelectorAll('.sw').forEach(s=>s.onclick=()=>{ document.querySelectorAll('.sw').forEach(o=>o.classList.remove('sel'));
+  s.classList.add('sel'); cfg.color=s.dataset.c; applyCfg(); if(tConn&&tConn.open) tConn.send({t:'cfg',cfg}); });
+function theraStart(){ sendCfg();
+  if(tConn&&tConn.open) tConn.send({t:'start'});
+  engineStart();
+  document.getElementById('tInfo').textContent='série em andamento…';
+}
+function theraStop(){ if(tConn&&tConn.open) tConn.send({t:'stop'}); engineStop(); document.getElementById('tInfo').textContent='parado.'; }
+onSeriesEnd=onSeriesEnd||null;
+function copyLink(){
+  const txt=window._tLink
+    ? 'Olá! Para a nossa sessão, abra este link e toque em "Entrar na sessão": '+window._tLink
+    : 'Olá! Para a nossa sessão, abra o arquivo "EBL - Pamella Braz" que enviei, toque em "Tenho um código de sessão" e digite: '+window._tCode;
+  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(()=>alert('Convite copiado! Cole no WhatsApp do paciente.')); }
+  else { const ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); alert('Convite copiado!'); }
+}
+
+/* ================= SOLO ================= */
+function soloSetup(){ moveStageTo('soloStageHolder'); cfg={visual:true,audio:false,tap:false,speed:0.4,series:8,size:70,color:'#d8c9a3',vol:40,chime:true}; applyCfg(); }
+function soloPreset(speed,series,mode){
+  cfg.speed=speed; cfg.series=series;
+  cfg.visual=(mode==='visual'); cfg.tap=(mode==='tap'); cfg.audio=false;
+  applyCfg();
+}
+function soloToggle(){
+  if(running){ engineStop(); soloBtnReset(); }
+  else { engineStart(); document.getElementById('soloStart').textContent='⏸ Pausar'; }
+}
+function soloBtnReset(){ document.getElementById('soloStart').textContent='▶ Iniciar'; }
+window.addEventListener('resize',()=>{});
+</script>
+</body>
+</html>
