@@ -307,8 +307,10 @@ function moveStageTo(holderId){ document.getElementById(holderId).appendChild(st
 
 /* ================= PACIENTE ================= */
 let peer=null, conn=null;
-const codeFromHash=(location.hash||'').replace('#','').trim().toUpperCase();
-if(codeFromHash.length===4){ show('v-code'); document.getElementById('codeInput').value=codeFromHash; }
+const hashRaw=(location.hash||'').replace('#','').trim();
+if(hashRaw.toLowerCase()==='terapeuta'){ show('v-thera'); theraSetup(); }
+else { const codeFromHash=hashRaw.toUpperCase();
+  if(codeFromHash.length===4){ show('v-code'); document.getElementById('codeInput').value=codeFromHash; } }
 
 function patientConnect(){
   const code=document.getElementById('codeInput').value.trim().toUpperCase();
