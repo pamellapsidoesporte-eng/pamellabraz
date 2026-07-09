@@ -88,6 +88,15 @@ input.code:focus { border-color: var(--areia); }
 .plists details[open] summary { border-bottom: 1px solid rgba(216,201,163,.15); }
 .plists .pin { padding: 10px 18px 14px 18px; font-size: 14px; line-height: 1.75; color: rgba(235,230,220,.85); }
 .plists .pin strong { color: var(--areia); font-weight: 600; }
+
+@media (max-width: 620px){
+  .brand h1{font-size:26px;} .wrap{padding:18px 14px 40px 14px;}
+  .tapcircle{width:92px;height:92px;font-size:11px;}
+  .sessioninfo .code{font-size:26px;letter-spacing:8px;}
+  #stage{height:56vh;min-height:300px;}
+  input.code{width:190px;font-size:24px;letter-spacing:8px;}
+  .console{grid-template-columns:1fr;}
+}
 footer { text-align: center; font-size: 10.5px; color: rgba(235,230,220,.35); padding: 22px; letter-spacing: 1px; }
 </style>
 </head>
@@ -133,6 +142,11 @@ footer { text-align: center; font-size: 10.5px; color: rgba(235,230,220,.35); pa
 <div class="view" id="v-patient">
   <span class="backlink" onclick="patientLeave()">&#8592; voltar</span>
   <p class="msg"><span class="statusdot" id="pDot"></span><span id="pStatus">Conectando…</span></p>
+  <div class="center" style="margin:10px 0 0 0; display:flex; gap:14px; align-items:center; justify-content:center; flex-wrap:wrap;">
+    <button class="btn ghost" onclick="patientPanic()">&#9995; Preciso parar</button>
+    <span style="font-size:10px; letter-spacing:2px; color:rgba(235,230,220,.5);">VOLUME</span>
+    <input type="range" id="pVol" min="0" max="100" value="100" style="width:140px; accent-color:#d8c9a3;">
+  </div>
   <div id="stage">
     <div id="breath">
       <div id="breathCircle"></div>
@@ -272,7 +286,7 @@ footer { text-align: center; font-size: 10.5px; color: rgba(235,230,220,.35); pa
 
 <script>
 /* ================= views ================= */
-function patientLeave(){ try{ if(conn&&conn.open) conn.close(); }catch(e){} try{ engineStop(); }catch(e){} show('v-home'); }
+function patientLeave(){ pLeft=true; try{ if(conn&&conn.open) conn.close(); }catch(e){} try{ engineStop(); }catch(e){} show('v-home'); }
 function goHome(){ try{ engineStop(); }catch(e){} show('v-home'); }
 function show(id){ document.querySelectorAll('.view').forEach(v=>v.classList.remove('active')); document.getElementById(id).classList.add('active'); }
 
@@ -281,7 +295,7 @@ const stage=document.getElementById('stage'), dot=document.getElementById('dot')
       tapzone=document.getElementById('tapzone'), tapL=document.getElementById('tapL'), tapR=document.getElementById('tapR'),
       breath=document.getElementById('breath'), stCounter=document.getElementById('stCounter');
 let cfg={visual:true,audio:false,tap:false,speed:0.8,series:24,size:70,color:'#d8c9a3',vol:50,chime:true};
-let running=false, raf=null, t0=0, phase0=0, moves=0, serie=1, lastSide=null, audioCtx=null;
+let running=false, raf=null, t0=0, phase0=0, moves=0, serie=1, lastSide=null, audioCtx=null, phaseAcc=0, lastTs=null;
 let onSeriesEnd=null, onCount=null;
 
 function applyCfg(){
@@ -296,7 +310,7 @@ function beep(pan,freq,dur){
     if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
     if(audioCtx.state==='suspended'){ document.getElementById('audioOverlay').style.display='flex'; return; }
     const o=audioCtx.createOscillator(), g=audioCtx.createGain(), p=audioCtx.createStereoPanner();
-    o.frequency.value=freq||460; p.pan.value=pan; g.gain.value=(cfg.vol/100)*0.5;
+    o.frequency.value=freq||460; p.pan.value=pan; var pv=document.getElementById('pVol'); g.gain.value=(cfg.vol/100)*((pv?+pv.value:100)/100)*0.5;
     o.connect(g); g.connect(p); p.connect(audioCtx.destination);
     o.start(); g.gain.exponentialRampToValueAtTime(0.0001,audioCtx.currentTime+(dur||0.07)); o.stop(audioCtx.currentTime+(dur||0.08));
   }catch(e){}
@@ -308,7 +322,9 @@ document.getElementById('audioOverlay').onclick=function(){
 function chime(){ beep(0,660,0.4); setTimeout(()=>beep(0,880,0.5),180); }
 function frame(ts){
   if(!running) return;
-  const phase=phase0+(ts-t0)/1000*cfg.speed;
+  if(lastTs===null) lastTs=ts;
+  phaseAcc+=(ts-lastTs)/1000*cfg.speed; lastTs=ts;
+  const phase=phaseAcc;
   const x=0.5-0.5*Math.cos(phase*2*Math.PI);
   const pad=cfg.size/2+18, w=stage.clientWidth-2*pad;
   if(cfg.visual) dot.style.left=(pad+x*w)+'px';
@@ -333,7 +349,7 @@ function engineStart(){
     if(!audioCtx){ try{ audioCtx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} }
     if(audioCtx&&audioCtx.state==='suspended') document.getElementById('audioOverlay').style.display='flex';
   }
-  running=true; t0=performance.now(); phase0=0; moves=0; lastSide=null;
+  running=true; phaseAcc=0; lastTs=null; moves=0; lastSide=null;
   applyCfg(); if(cfg.visual) dot.style.display='block';
   raf=requestAnimationFrame(frame);
 }
@@ -346,7 +362,7 @@ function engineEndSeries(){
 }
 function engineStop(){
   running=false; cancelAnimationFrame(raf);
-  moves=0; serie=1; lastSide=null;
+  moves=0; serie=1; lastSide=null; phaseAcc=0; lastTs=null;
   dot.style.left='50%'; dot.style.display='none';
   tapL.classList.remove('on'); tapR.classList.remove('on');
   stCounter.textContent=''; breath.style.display='flex';
@@ -357,7 +373,7 @@ document.getElementById('fsBtn').onclick=()=>{ if(document.fullscreenElement) do
 function moveStageTo(holderId){ document.getElementById(holderId).appendChild(stage); }
 
 /* ================= PACIENTE ================= */
-let peer=null, conn=null;
+let peer=null, conn=null, pLeft=false, pCode=null, reTries=0;
 function handleHash(){
   const hashRaw=(location.hash||'').replace('#','').trim();
   if(hashRaw.toLowerCase()==='terapeuta'){ requestThera(); }
@@ -367,34 +383,53 @@ function handleHash(){
 window.addEventListener('DOMContentLoaded', handleHash);
 window.addEventListener('hashchange', handleHash);
 
+function setPStatus(txt,on){ document.getElementById('pStatus').textContent=txt;
+  document.getElementById('pDot').classList.toggle('on',!!on); }
+
+function attachConn(c){
+  conn=c;
+  c.on('open',function(){ reTries=0; setPStatus('Conectado. Aguarde a condu\u00e7\u00e3o da sua psic\u00f3loga.',true); c.send({t:'hi'}); });
+  c.on('data',function(d){
+    if(d.t==='cfg'){ cfg=Object.assign(cfg,d.cfg); applyCfg(); }
+    if(d.t==='start') engineStart();
+    if(d.t==='stop') engineStop();
+  });
+  c.on('close',function(){ if(pLeft) return;
+    engineStop(); setPStatus('Conex\u00e3o caiu \u2014 tentando reconectar\u2026',false); scheduleReconnect(); });
+  c.on('error',function(){ if(!pLeft){ setPStatus('Conex\u00e3o inst\u00e1vel \u2014 tentando reconectar\u2026',false); scheduleReconnect(); } });
+}
+function scheduleReconnect(){
+  if(pLeft) return;
+  if(reTries>=15){ setPStatus('N\u00e3o consegui reconectar. Toque em voltar e entre de novo com o c\u00f3digo.',false); return; }
+  reTries++;
+  setTimeout(function(){ if(pLeft) return;
+    try{ attachConn(peer.connect('pbraz-ebl-'+pCode,{reliable:true})); }catch(e){ scheduleReconnect(); }
+  },4000);
+}
+function patientPanic(){
+  engineStop();
+  try{ if(conn&&conn.open) conn.send({t:'panic'}); }catch(e){}
+  setPStatus('Pausado a seu pedido. Respire \u2014 sua psic\u00f3loga j\u00e1 foi avisada.',true);
+}
 function patientConnect(){
   const code=document.getElementById('codeInput').value.trim().toUpperCase();
   const m=document.getElementById('pMsg');
-  if(code.length!==4){ m.textContent='O código tem 4 caracteres.'; return; }
-  if(typeof Peer==='undefined'){ m.textContent='Sem conexão com a internet. Verifique e tente de novo.'; return; }
-  m.textContent='Conectando…';
+  if(code.length!==4){ m.textContent='O c\u00f3digo tem 4 caracteres.'; return; }
+  if(typeof Peer==='undefined'){ m.textContent='Sem conex\u00e3o com a internet. Verifique e tente de novo.'; return; }
+  m.textContent='Conectando\u2026'; pCode=code; pLeft=false; reTries=0;
   peer=new Peer();
-  peer.on('open',()=>{
-    conn=peer.connect('pbraz-ebl-'+code,{reliable:true});
-    conn.on('open',()=>{
-      show('v-patient'); moveStageTo('v-patient')||0;
-      document.getElementById('v-patient').insertBefore(stage, document.getElementById('v-patient').children[1]);
-      document.getElementById('pDot').classList.add('on');
-      document.getElementById('pStatus').textContent='Conectado. Aguarde a condução da sua psicóloga.';
-      conn.send({t:'hi'});
-      conn.on('data',d=>{
-        if(d.t==='cfg'){ cfg=Object.assign(cfg,d.cfg); applyCfg(); }
-        if(d.t==='start') engineStart();
-        if(d.t==='stop') engineStop();
-      });
-      onSeriesEnd=(s,n)=>{ conn.send({t:'done',serie:s,moves:n}); };
-      onCount=(n,s)=>{ if(n%4===0) conn.send({t:'count',n,serie:s}); };
-      conn.on('close',()=>{ document.getElementById('pDot').classList.remove('on');
-        document.getElementById('pStatus').textContent='Sessão encerrada.'; engineStop(); });
-    });
-    setTimeout(()=>{ if(!conn||!conn.open){ m.textContent='Não encontrei essa sessão. Confira o código com a sua psicóloga.'; } },6000);
+  peer.on('open',function(){
+    show('v-patient');
+    const vp=document.getElementById('v-patient');
+    vp.insertBefore(stage, vp.querySelector('.plists'));
+    setPStatus('Conectando\u2026',false);
+    attachConn(peer.connect('pbraz-ebl-'+code,{reliable:true}));
+    onSeriesEnd=function(s,n){ try{ if(conn&&conn.open) conn.send({t:'done',serie:s,moves:n}); }catch(e){} };
+    onCount=function(n,s){ try{ if(n%4===0&&conn&&conn.open) conn.send({t:'count',n,serie:s}); }catch(e){} };
+    setTimeout(function(){ if(!conn||!conn.open){ m.textContent='N\u00e3o encontrei essa sess\u00e3o. Confira o c\u00f3digo com a sua psic\u00f3loga.'; } },7000);
   });
-  peer.on('error',()=>{ m.textContent='Não foi possível conectar. Confira o código e a internet.'; });
+  peer.on('disconnected',function(){ try{ peer.reconnect(); }catch(e){} });
+  peer.on('error',function(){ if(!conn||!conn.open) m.textContent='N\u00e3o foi poss\u00edvel conectar. Confira o c\u00f3digo e a internet.'; });
 }
 
 /* ================= TERAPEUTA ================= */
@@ -415,7 +450,8 @@ document.addEventListener('keydown',e=>{ if(e.key==='Enter'&&document.getElement
 function theraSetup(){
   moveStageTo('theraStageHolder');
   if(tPeer) return;
-  const code=makeCode();
+  const code=sessionStorage.getItem('pb_ebl_code')||makeCode();
+  sessionStorage.setItem('pb_ebl_code',code);
   document.getElementById('tCode').textContent=code.split('').join(' ');
   const isWeb=location.protocol.startsWith('http');
   const link=isWeb?(location.origin+'/paciente/#'+code):null;
@@ -423,6 +459,8 @@ function theraSetup(){
   window._tCode=code; window._tLink=link;
   if(typeof Peer==='undefined'){ document.getElementById('tStatus').textContent='sem internet — modo local apenas'; return; }
   tPeer=new Peer('pbraz-ebl-'+code);
+  tPeer.on('disconnected',function(){ try{ tPeer.reconnect(); }catch(e){} });
+  tPeer.on('error',function(err){ if(err&&err.type==='unavailable-id'){ sessionStorage.removeItem('pb_ebl_code'); try{ tPeer.destroy(); }catch(e){} tPeer=null; theraSetup(); } });
   tPeer.on('connection',c=>{
     tConn=c;
     c.on('data',d=>{
@@ -430,6 +468,10 @@ function theraSetup(){
         document.getElementById('tStatus').textContent='paciente conectado ✓'; sendCfg(); }
       if(d.t==='count') document.getElementById('tInfo').textContent='paciente: série '+d.serie+' · '+d.n+' mov.';
       if(d.t==='done'){ document.getElementById('tInfo').textContent='✔ paciente concluiu a série '+d.serie+' ('+d.moves+' mov.) — "O que você percebe agora?"'; }
+      if(d.t==='panic'){ engineStop(); if(tConn&&tConn.open){} const el=document.getElementById('tInfo');
+        el.textContent='✋ O PACIENTE PEDIU PARA PARAR — acolha antes de continuar';
+        el.style.color='#d88b6b';
+        try{ beep(0,520,0.35); setTimeout(function(){beep(0,520,0.35);},400); }catch(e){} }
     });
     c.on('close',()=>{ document.getElementById('tDot').classList.remove('on');
       document.getElementById('tStatus').textContent='paciente desconectou'; });
@@ -456,7 +498,7 @@ function sendCfg(){ readCfg(); if(tConn&&tConn.open) tConn.send({t:'cfg',cfg}); 
 });
 document.querySelectorAll('.sw').forEach(s=>s.onclick=()=>{ document.querySelectorAll('.sw').forEach(o=>o.classList.remove('sel'));
   s.classList.add('sel'); cfg.color=s.dataset.c; applyCfg(); if(tConn&&tConn.open) tConn.send({t:'cfg',cfg}); });
-function theraStart(){ sendCfg();
+function theraStart(){ document.getElementById('tInfo').style.color=''; sendCfg();
   if(tConn&&tConn.open) tConn.send({t:'start'});
   engineStart();
   document.getElementById('tInfo').textContent='série em andamento…';
